@@ -1,0 +1,1 @@
+/usr/bin/c++   -g -W -Wall -Werror -fopenmp   CMakeFiles/evolve.dir/src/Main.cpp.o CMakeFiles/evolve.dir/src/Brain/DRAWS.cpp.o CMakeFiles/evolve.dir/src/Brain/DWRAON.cpp.o  -o evolve 
