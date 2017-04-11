@@ -1,3 +1,0 @@
-/home/aneopsy/Evolve/CMakeFiles/edit_cache.dir
-/home/aneopsy/Evolve/CMakeFiles/rebuild_cache.dir
-/home/aneopsy/Evolve/CMakeFiles/evolve.dir
