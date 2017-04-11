@@ -249,3 +249,7 @@ DRAWS::Brain DRAWS::Brain::crossover(const DRAWS::Brain &other) {
     }
     return newbrain;
 }
+
+t_brain                 DRAWS::Brain::getBrain() const {
+    return _brain;
+}

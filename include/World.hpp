@@ -20,7 +20,7 @@
 #include "Settings.hpp"
 
 namespace Evolve {
-    typedef struct stats_s {
+    typedef struct s_stats {
         int   STATherbivores;
         int   STATfrugivores;
         int   STATcarnivores;
@@ -44,7 +44,16 @@ namespace Evolve {
         float STATallfruit;
         float STATallmeat;
         float STATallhazard;
-    } stats_t;
+    } t_stats;
+
+    typedef struct s_num {
+        int numHerbivore[conf::RECORD_SIZE];
+        int numCarnivore[conf::RECORD_SIZE];
+        int numFrugivore[conf::RECORD_SIZE];
+        int numHybrid[conf::RECORD_SIZE];
+        int numDead[conf::RECORD_SIZE];
+        int numTotal[conf::RECORD_SIZE];
+    } t_num;
 
     class World {
     public:
@@ -64,8 +73,8 @@ namespace Evolve {
 
         bool isDebug() const;
         void setDebug(bool state);
-        std::vector <Vector2f> linesA;
-        std::vector <Vector2f> linesB;
+        std::vector<Vector2f> linesA;
+        std::vector<Vector2f> linesB;
 
         void positionOfInterest(int type, float &xi, float &yi);
 
@@ -96,21 +105,16 @@ namespace Evolve {
 
         void
         addUnits(int num, int set_stomach = -1, float nx = -1, float ny = -1,
-                  bool set_lungs = true);
+                 bool set_lungs = true);
 
-        int numHerbivore[conf::RECORD_SIZE];
-        int numCarnivore[conf::RECORD_SIZE];
-        int numFrugivore[conf::RECORD_SIZE];
-        int numHybrid[conf::RECORD_SIZE];
-        int numDead[conf::RECORD_SIZE];
-        int numTotal[conf::RECORD_SIZE];
-        int ptr;
+        t_num num;
+        int   ptr;
 
         int modcounter;
         int current_epoch;
         int idcounter;
 
-        std::vector <Unit> units;
+        std::vector<Unit> units;
 
         void setInputs();
         void brainsTick();
@@ -124,7 +128,7 @@ namespace Evolve {
 
         std::vector<float> selectedSounds;
 
-        std::vector <std::pair<const char *, int>> events;
+        std::vector<std::pair<const char *, int>> events;
         void addEvent(const char *text);
 
         int getHerbivores() const;
@@ -149,8 +153,7 @@ namespace Evolve {
         int   CW;
         int   CH;
         float cells[Layer::LAYERS][
-                      conf::WIDTH / conf::CZ][
-                      conf::HEIGHT / conf::CZ];
+                      conf::WIDTH / conf::CZ][conf::HEIGHT / conf::CZ];
 
         int   MINFOOD;
         float INITFOODDENSITY;
@@ -238,21 +241,17 @@ namespace Evolve {
 
     private:
         void writeReport();
-
         void reproduce(int ai, int bi);
-
         void cellsRandomFill(int layer, float amount, int number);
         void cellsLandMasses();
-        void
-        findStats();
+        void findStats();
 
-        std::vector <std::string> tips;
-
-        bool   CLOSED;
-        bool   DEBUG;
-        bool   AUTOSELECT;
-        int    SELECTION;
-        stats_t stats;
+        std::vector<std::string> tips;
+        bool                     CLOSED;
+        bool                     DEBUG;
+        bool                     AUTOSELECT;
+        int                      SELECTION;
+        t_stats                  stats;
     };
 }
 

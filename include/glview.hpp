@@ -44,7 +44,7 @@ public:
     virtual ~GLView();
 
     virtual void
-    drawUnit(const Unit &a, float x, float y, bool ghost = 0);
+    drawUnit(const Evolve::Unit &a, float x, float y, bool ghost = 0);
     virtual void
     drawCell(int x, int y, float quantity);
     virtual void drawData();

@@ -25,7 +25,7 @@ Evolve::World::World() :
         pinput1(0) {
   reset();
   spawn();
-  printf("WORLD MADE!\n");
+  printf("World Made!\n");
 }
 
 void Evolve::World::reset() {
@@ -52,13 +52,13 @@ void Evolve::World::processInteractions() {}
 
 void Evolve::World::healthTick() {}
 
-void Evolve::World::setSelection(int type) {}
+void Evolve::World::setSelection(int type) { (void) type; }
 
-void Evolve::World::setSelectedUnit(int idx) {}
+void Evolve::World::setSelectedUnit(int idx) { (void) idx; }
 
 int Evolve::World::getSelectedUnit() const {}
 
-int Evolve::World::getClosestRelative(int idx) const {}
+int Evolve::World::getClosestRelative(int idx) const { (void) idx; }
 
 int Evolve::World::getSelection() const { return SELECTION; }
 
@@ -70,12 +70,13 @@ void Evolve::World::selectedBabys() {}
 
 void Evolve::World::selectedMutate() {}
 
-void Evolve::World::getFollowLocation(float &xi, float &yi) {}
-
-bool
-Evolve::World::processMouse(int button, int state, int x, int y, float scale) {}
+void Evolve::World::getFollowLocation(float &xi, float &yi) {
+  (void) xi;
+  (void) yi;
+}
 
 void Evolve::World::draw(IView *view, int layer) {
+  (void) layer;
   view->drawData();
   view->drawStatic();
 }
@@ -208,10 +209,9 @@ void Evolve::World::cellsRandomFill(int layer, float amount, int number) {
   for (int i = 0; i < number; i++) {
     int cx = randi(0, CW);
     int cy = randi(0, CH);
-//    cells[layer][cx][cy]= amount;
+    cells[layer][cx][cy] = amount;
   }
 }
-
 
 void Evolve::World::setDebug(bool state) {
   DEBUG = state;
@@ -239,4 +239,26 @@ void Evolve::World::addEvent(const char *text) {
   data.first  = text;
   data.second = 2;//conf::EVENTS_HALFLIFE;
   events.push_back(data);
+}
+
+bool
+Evolve::World::processMouse(int button, int state, int x, int y, float scale) {
+  if (button == 0 && state == 1) {
+    float mind = 1e10;
+    int   mini = -1;
+    float d;
+
+//    for (int i = 0; i < (int) units.size(); i++) {
+//      d = pow(x - units[i].pos.x, 2) + pow(y - units[i].pos.y, 2);
+//      if (d < mind) {
+//        mind = d;
+//        mini = i;
+//      }
+//    }
+    if (mind < 3500 / scale) {
+      //toggle selection of this agent
+      setSelectedUnit(mini);
+      return true;
+    } else return false;
+  } else return false;
 }

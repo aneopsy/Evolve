@@ -86,9 +86,10 @@ namespace                       DRAWS {
         void                    initMutate(float MR, float MR2);
         void                    liveMutate(float MR, float MR2, std::vector<float> &out);
         Brain                   crossover(const Brain &other);
+        t_brain                 getBrain() const;
+        std::vector <Neuron>    _neurons;
 
     private:
-        std::vector <Neuron>    _neurons;
         t_brain                 _brain;
     };
 }
