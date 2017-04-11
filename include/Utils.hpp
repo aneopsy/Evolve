@@ -7,7 +7,7 @@
 
 #include <stdlib.h>
 #include <math.h>
-#include <vmath.hpp>
+#include <Vector.hpp>
 
 inline float                    randf(float a, float b) {
     return ((b - a) * ((float) rand() / RAND_MAX)) + a;

@@ -95,6 +95,15 @@
 		<Unit filename="/home/aneopsy/Evolve/src/Main.cpp">
 			<Option target="evolve"/>
 		</Unit>
+		<Unit filename="/home/aneopsy/Evolve/src/Unit.cpp">
+			<Option target="evolve"/>
+		</Unit>
+		<Unit filename="/home/aneopsy/Evolve/src/World.cpp">
+			<Option target="evolve"/>
+		</Unit>
+		<Unit filename="/home/aneopsy/Evolve/src/glview.cpp">
+			<Option target="evolve"/>
+		</Unit>
 		<Unit filename="/home/aneopsy/Evolve/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\"/>
 		</Unit>
