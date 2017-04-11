@@ -6,7 +6,9 @@
 #include <DRAWS.hpp>
 #include <Utils.hpp>
 #include <ctime>
-#include <GL/glut.h>
+
+#include <glut.h>
+//#include <glui.h>
 
 //Drawing funciton
 void draw(void)
@@ -22,12 +24,10 @@ void draw(void)
 int main(int argc, char **argv)
 {
   glutInit(&argc, argv);
-  //Simple buffer
   glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB );
   glutInitWindowPosition(50,25);
   glutInitWindowSize(500,250);
-  glutCreateWindow("Green window");
-  //Call to the drawing function
+  glutCreateWindow("Evolve");
   glutDisplayFunc(draw);
   glutMainLoop();
   return 0;
