@@ -1,6 +1,14 @@
-//
-// Created by Aneosy on 02/04/2017.
-//
+/* ************************************************************************** *
+ *   DWRAON.hpp
+ *                                                       :::      ::::::::    *
+ *                                                     :+: :+:    :+:    :+:  *
+ *                                                    +:+   +:+   +:+    +:+  *
+ *   By: THEIS Paul                                  +#++:++#++:  +#++:++#+   *
+ *                                                   +#+     +#+  +#+         *
+ *   Created: 11/04/17                               #+#     #+#  #+#         *
+ *   Updated: 11/04/17                               #+#     #+#  #+#         *
+ *   Project: Evolve
+ * ************************************************************************** */
 
 #ifndef EVOLVE_DWRAON_HPP
 #define EVOLVE_DWRAON_HPP
@@ -8,7 +16,7 @@
 # include <IBrain.hpp>
 
 namespace                       DWRAON {
-    class                       Neuron : public INeuron {
+    class                       Neuron : public ANeuron {
     public:
         Neuron(t_brain const &settings);
         int                     genre;

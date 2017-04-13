@@ -5,7 +5,7 @@
 #ifndef EVOLVE_IBRAIN_HPP
 #define EVOLVE_IBRAIN_HPP
 
-#include <INeuron.hpp>
+#include <ANeuron.hpp>
 
 class                       IBrain {
 public:

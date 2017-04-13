@@ -73,25 +73,6 @@ RenderString(float x, float y, void *font, const char *string, float r, float g,
     glutBitmapCharacter(font, string[i]);
 }
 
-void drawCircle(float x, float y, float r) {
-  float    n;
-  for (int k = 0; k < 17; k++) {
-    n = k * (M_PI / 8);
-    glVertex3f(x + r * sin(n), y + r * cos(n), 0);
-  }
-}
-
-void drawQuadrant(float x, float y, float r, float a, float b) {
-  glVertex3f(x, y, 0);
-  float    n;
-  for (int k = 0; k < (int) ((b - a) * 8 / M_PI + 1); k++) {
-    n = k * (M_PI / 8) + a;
-    glVertex3f(x + r * sin(n), y + r * cos(n), 0);
-  }
-  glVertex3f(x + r * sin(b), y + r * cos(b), 0);
-  glVertex3f(x, y, 0);
-}
-
 GLView::GLView(Evolve::World *s) :
         world(world),
         modcounter(0),
@@ -211,7 +192,26 @@ void GLView::glCreateMenu() {
   glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 
-void GLView::gluiCreateMenu() {}
+void GLView::gluiCreateMenu() {
+  Menu = GLUI_Master.create_glui("Settings",0,1,1);
+
+  GLUI_Panel *panel_world= new GLUI_Panel(Menu,"World Control");
+  new GLUI_Button(panel_world,"Load",1, glui_handleRW);
+  new GLUI_Button(panel_world,"Save",2, glui_handleRW);
+  new GLUI_Button(panel_world,"New",3, glui_handleRW);
+
+  GLUI_Panel *panel_unit= new GLUI_Panel(Menu,"Unit Control");
+  new GLUI_Button(panel_unit,"Load",1, glui_handleRW);
+  new GLUI_Button(panel_unit,"Save",2, glui_handleRW);
+  new GLUI_Button(panel_unit,"New",3, glui_handleRW);
+
+  GLUI_Panel *panel_speed= new GLUI_Panel(Menu,"Speed Control");
+  Menu->add_checkbox_to_panel(panel_speed,"Fast Mode",&live_fastmode);
+  Menu->add_spinner_to_panel(panel_speed,"Speed",GLUI_SPINNER_INT,&live_skipdraw);
+
+  Menu->add_checkbox("DEBUG", &live_debug);
+  Menu->set_main_gfx_window(mainWin);
+}
 
 void GLView::handleRW(int action) { (void) action; }
 
@@ -232,7 +232,9 @@ void GLView::countdownEvents() {
 
 void GLView::handleIdle() {
 //set proper window (we don't want to draw on nothing, now do we?!)
-  if (glutGetWindow() != win1) glutSetWindow(win1);
+  if (glutGetWindow() != mainWin) glutSetWindow(mainWin);
+//  if (glutGetWindow() != profileWin) glutSetWindow(profileWin);
+//  if (glutGetWindow() != statsWin) glutSetWindow(statsWin);
 
   GLUI_Master.sync_live_all();
 
@@ -279,7 +281,7 @@ void GLView::handleIdle() {
 
 void GLView::renderScene() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glClearColor(0, 0, 0, 255);
+  glClearColor(0.129, 0.145, 0.168, 255);
   glPushMatrix();
 
   glTranslatef(glutGet(GLUT_WINDOW_WIDTH) / 2, glutGet(GLUT_WINDOW_HEIGHT) / 2,
@@ -295,48 +297,91 @@ void GLView::renderScene() {
   countdownEvents();
 }
 
-void GLView::drawUnit(const Evolve::Unit &unit, float x, float y, bool ghost) {}
+void GLView::drawUnit(const Evolve::Unit &unit, float x, float y, bool ghost) {
+  float n;
+  float r  = unit.radius;
+  float rp = unit.radius + 2.5;
+
+  glBegin(GL_POLYGON);
+  //body
+  glColor4f(255, 255, 255, 255);
+  Forms::drawCircle(Vector2d(x, y), r);
+  glEnd();
+  if (world->isDebug() || ghost) {
+    //wheels and wheel speeds
+    float wheelangle = unit.angle + M_PI / 2;
+    glBegin(GL_LINES);
+    glColor3f(0, 1, 0);
+    glVertex3f(x + unit.radius / 2 * cos(wheelangle),
+               y + unit.radius / 2 * sin(wheelangle), 0);
+    glVertex3f(x + unit.radius / 2 * cos(wheelangle) +
+               20 * unit.w1 * cos(unit.angle),
+               y + unit.radius / 2 * sin(wheelangle) +
+               20 * unit.w1 * sin(unit.angle), 0);
+    wheelangle -= M_PI;
+    glVertex3f(x + unit.radius / 2 * cos(wheelangle),
+               y + unit.radius / 2 * sin(wheelangle), 0);
+    glVertex3f(x + unit.radius / 2 * cos(wheelangle) +
+               20 * unit.w2 * cos(unit.angle),
+               y + unit.radius / 2 * sin(wheelangle) +
+               20 * unit.w2 * sin(unit.angle), 0);
+    glEnd();
+
+    glBegin(GL_POLYGON);
+    glColor3f(0, 1, 0);
+    Forms::drawCircle(Vector2d(x + unit.radius / 2 * cos(wheelangle),
+                               y + unit.radius / 2 * sin(wheelangle)), 1);
+    glEnd();
+    wheelangle += M_PI;
+    glBegin(GL_POLYGON);
+    Forms::drawCircle(Vector2d(x + unit.radius / 2 * cos(wheelangle),
+                               y + unit.radius / 2 * sin(wheelangle)), 1);
+    glEnd();
+  }
+}
 
 void GLView::drawData() {}
 
 void GLView::drawStatic() {
-/*start setup*/
   glMatrixMode(GL_PROJECTION);
-  // save previous matrix which contains the
-  //settings for the perspective projection
   glPushMatrix();
   glLoadIdentity();
 
-  int ww= glutGet(GLUT_WINDOW_WIDTH);
-  int wh= glutGet(GLUT_WINDOW_HEIGHT);
-  // set a 2D orthographic projection
+  int ww = glutGet(GLUT_WINDOW_WIDTH);
+  int wh = glutGet(GLUT_WINDOW_HEIGHT);
   gluOrtho2D(0, ww, 0, wh);
-  // invert the y axis, down is positive
   glScalef(1, -1, 1);
-  // move the origin from the bottom left corner
-  // to the upper left corner
   glTranslatef(0, -wh, 0);
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
   glLoadIdentity();
-  /*end setup*/
-
-  //begin things that we actually want to draw staticly
-  if(live_paused) RenderString(10, 20, GLUT_BITMAP_HELVETICA_12, "Paused", 0.5f, 0.5f, 0.5f);
-  if(live_follow!=0) {
-    if(world->getSelectedUnit()>=0) RenderString(10, 40, GLUT_BITMAP_HELVETICA_12, "Following", 0.5f, 0.5f, 0.5f);
-    else RenderString(10, 40, GLUT_BITMAP_HELVETICA_12, "No Follow Target", 1.0f, 0.5f, 0.5f);
+  if (live_paused)
+    RenderString(10, 20, GLUT_BITMAP_HELVETICA_12, "Paused", 0.5f, 0.5f, 0.5f);
+  if (live_follow != 0) {
+    if (world->getSelectedUnit() >= 0)
+      RenderString(10, 40, GLUT_BITMAP_HELVETICA_12, "Following", 0.5f, 0.5f,
+                   0.5f);
+    else
+      RenderString(10, 40, GLUT_BITMAP_HELVETICA_12, "No Follow Target", 1.0f,
+                   0.5f, 0.5f);
   }
-  if(live_selection==Select::RELATIVE) RenderString(10, 60, GLUT_BITMAP_HELVETICA_12, "Relative Autoselect Mode", 0.5f, 0.8f, 0.5f);
-  if(world->isClosed()) RenderString(10, 80, GLUT_BITMAP_HELVETICA_12, "Closed World", 0.5f, 0.5f, 0.5f);
-  if(world->isDebug()) {
-    sprintf(buf, "Plant-Haz Supp: %i agents", (int)(world->getFoodSupp()-world->getHazardSupp()));
+  if (live_selection == Select::RELATIVE)
+    RenderString(10, 60, GLUT_BITMAP_HELVETICA_12, "Relative Autoselect Mode",
+                 0.5f, 0.8f, 0.5f);
+  if (world->isClosed())
+    RenderString(10, 80, GLUT_BITMAP_HELVETICA_12, "Closed World", 0.5f, 0.5f,
+                 0.5f);
+  if (world->isDebug()) {
+    sprintf(buf, "Plant: %i units",
+            (int) (world->getFoodSupp() - world->getHazardSupp()));
     RenderString(5, 140, GLUT_BITMAP_HELVETICA_12, buf, 0.5f, 0.5f, 1.0f);
-    sprintf(buf, "Fruit-Haz Supp: %i agents", (int)(world->getFruitSupp()-world->getHazardSupp()));
+    sprintf(buf, "Fruit: %i units",
+            (int) (world->getFruitSupp() - world->getHazardSupp()));
     RenderString(5, 160, GLUT_BITMAP_HELVETICA_12, buf, 0.5f, 0.5f, 1.0f);
-    sprintf(buf, "Meat-Haz Supp: %i agents", (int)(world->getMeatSupp()-world->getHazardSupp()));
+    sprintf(buf, "Meat: %i units",
+            (int) (world->getMeatSupp() - world->getHazardSupp()));
     RenderString(5, 180, GLUT_BITMAP_HELVETICA_12, buf, 0.5f, 0.5f, 1.0f);
-    sprintf(buf, "-Haz 'Supp': %i agents", (int)(-world->getHazardSupp()));
+    sprintf(buf, "Haz: %i units", (int) (-world->getHazardSupp()));
     RenderString(5, 200, GLUT_BITMAP_HELVETICA_12, buf, 0.5f, 0.5f, 1.0f);
     sprintf(buf, "modcounter: %i", world->modcounter);
     RenderString(5, 240, GLUT_BITMAP_HELVETICA_12, buf, 0.5f, 0.5f, 1.0f);
@@ -344,287 +389,128 @@ void GLView::drawStatic() {
     RenderString(5, 260, GLUT_BITMAP_HELVETICA_12, buf, 0.5f, 0.5f, 1.0f);
   }
 
-  //center axis markers
-  glBegin(GL_LINES);
-  glColor4f(0,1,0,0.3); //green y-axis
-  glVertex3f(ww/2,wh/2,0);
-  glVertex3f(ww/2,wh/2+15,0);
+  Forms::drawRepere(Vector2d(ww, wh), Vector2d(15, 15));
 
-  glColor4f(1,0,0,0.3); //red x-axis
-  glVertex3f(ww/2,wh/2,0);
-  glVertex3f(ww/2+15,wh/2,0);
-  glEnd();
+  float ss       = 18;
+  float movezero = 0;
+  int   fadetime = conf::EVENTS_HALFLIFE - 20;
 
-  //event log display
-  float ss= 18;
-  float movezero= 0;
-  int fadetime= conf::EVENTS_HALFLIFE-20;
+  int count = world->events.size();
+  if (conf::EVENTS_DISP < count) count = conf::EVENTS_DISP;
 
-  int count= world->events.size();
-  if(conf::EVENTS_DISP<count) count= conf::EVENTS_DISP;
+  for (int io = 0; io < count; io++) {
+    int counter = world->events[io].second;
 
-  for(int io= 0; io<count; io++){
-    int counter= world->events[io].second;
+    float fade = cap((-abs((float) counter) + conf::EVENTS_HALFLIFE) / 20);
 
-    float fade= cap((-abs((float)counter)+conf::EVENTS_HALFLIFE)/20);
-
-    float move= 0;
+    float move = 0;
 
 
-    if(counter>fadetime) move= powf(((float)counter-fadetime)/7.4,3);
-    else if (counter<-fadetime) move= powf(((float)counter+fadetime)/7.4,3);
+    if (counter > fadetime) move = powf(((float) counter - fadetime) / 7.4, 3);
+    else if (counter < -fadetime)
+      move = powf(((float) counter + fadetime) / 7.4, 3);
 
-    if(io==0){
-      movezero= move;
+    if (io == 0) {
+      movezero = move;
       //move= 0;
     }
     glBegin(GL_QUADS);
-    glColor4f(0.8,0.8,0.8,0.5*fade);
-    glVertex3f(ww-202, 145+2.5*ss+io*ss+movezero+move-0.5*ss,0);
-    glVertex3f(ww-2, 145+2.5*ss+io*ss+movezero+move-0.5*ss,0);
-    glVertex3f(ww-2, 145+2.5*ss+io*ss+movezero+move+0.5*ss,0);
-    glVertex3f(ww-202, 145+2.5*ss+io*ss+movezero+move+0.5*ss,0);
+    glColor4f(0.8, 0.8, 0.8, 0.5 * fade);
+    glVertex3f(ww - 202, 145 + 2.5 * ss + io * ss + movezero + move - 0.5 * ss,
+               0);
+    glVertex3f(ww - 2, 145 + 2.5 * ss + io * ss + movezero + move - 0.5 * ss,
+               0);
+    glVertex3f(ww - 2, 145 + 2.5 * ss + io * ss + movezero + move + 0.5 * ss,
+               0);
+    glVertex3f(ww - 202, 145 + 2.5 * ss + io * ss + movezero + move + 0.5 * ss,
+               0);
     glEnd();
 
-    RenderString(ww-200, 150+2.5*ss+io*ss+movezero+move, GLUT_BITMAP_HELVETICA_12, world->events[io].first, 0.0f, 0.0f, 0.0f, fade);
+    RenderString(ww - 200, 150 + 2.5 * ss + io * ss + movezero + move,
+                 GLUT_BITMAP_HELVETICA_12, world->events[io].first, 0.0f, 0.0f,
+                 0.0f, fade);
   }
 
-  if(world->getSelectedUnit()>=0){
-    Evolve::Unit selected= world->units[world->getSelectedUnit()];
+  if (world->getSelectedUnit() >= 0) {
+    Evolve::Unit selected = world->units[world->getSelectedUnit()];
     glBegin(GL_QUADS);
-    glColor4f(0,0.4,0.5,0.55);
-    glVertex3f(ww-10,10,0);
-    glVertex3f(ww-10,150,0);
-    glVertex3f(ww-400,150,0);
-    glVertex3f(ww-400,10,0);
+    glColor4f(0.235, 0.258, 0.305, 1.0);
+    glVertex3f(ww - 10, 10, 0);
+    glVertex3f(ww - 10, 150, 0);
+    glVertex3f(ww - 400, 150, 0);
+    glVertex3f(ww - 400, 10, 0);
 
     //stomach indicators
-    glColor4f(0,0,0,0.7);
-    glVertex3f(ww-101,15,0);
-    glVertex3f(ww-101,26,0);
-    glVertex3f(ww-16,26,0);
-    glVertex3f(ww-16,15,0);
+    glColor4f(0, 0, 0, 0.7);
+    glVertex3f(ww - 101, 15, 0);
+    glVertex3f(ww - 101, 26, 0);
+    glVertex3f(ww - 16, 26, 0);
+    glVertex3f(ww - 16, 15, 0);
 
-    glColor3f(0,0.6,0);
-    glVertex3f(ww-100,16,0);
-    glVertex3f(ww-100,19,0);
-    glVertex3f(selected.stomach[Stomach::PLANT]*83+(ww-100),19,0);
-    glVertex3f(selected.stomach[Stomach::PLANT]*83+(ww-100),16,0);
+    glColor3f(0, 0.6, 0);
+    glVertex3f(ww - 100, 16, 0);
+    glVertex3f(ww - 100, 19, 0);
+    glVertex3f(selected.stomach[Stomach::PLANT] * 83 + (ww - 100), 19, 0);
+    glVertex3f(selected.stomach[Stomach::PLANT] * 83 + (ww - 100), 16, 0);
 
-    glColor3f(0.6,0.6,0);
-    glVertex3f(ww-100,19,0);
-    glVertex3f(ww-100,22,0);
-    glVertex3f(selected.stomach[Stomach::FRUIT]*83+(ww-100),22,0);
-    glVertex3f(selected.stomach[Stomach::FRUIT]*83+(ww-100),19,0);
+    glColor3f(0.6, 0.6, 0);
+    glVertex3f(ww - 100, 19, 0);
+    glVertex3f(ww - 100, 22, 0);
+    glVertex3f(selected.stomach[Stomach::FRUIT] * 83 + (ww - 100), 22, 0);
+    glVertex3f(selected.stomach[Stomach::FRUIT] * 83 + (ww - 100), 19, 0);
 
-    glColor3f(0.6,0,0);
-    glVertex3f(ww-100,22,0);
-    glVertex3f(ww-100,25,0);
-    glVertex3f(selected.stomach[Stomach::MEAT]*83+(ww-100),25,0);
-    glVertex3f(selected.stomach[Stomach::MEAT]*83+(ww-100),22,0);
+    glColor3f(0.6, 0, 0);
+    glVertex3f(ww - 100, 22, 0);
+    glVertex3f(ww - 100, 25, 0);
+    glVertex3f(selected.stomach[Stomach::MEAT] * 83 + (ww - 100), 25, 0);
+    glVertex3f(selected.stomach[Stomach::MEAT] * 83 + (ww - 100), 22, 0);
 
     //repcounter indicator
-    glColor4f(0,0,0,0.7);
-    glVertex3f(ww-201,15,0);
-    glVertex3f(ww-201,26,0);
-    glVertex3f(ww-106,26,0);
-    glVertex3f(ww-106,15,0);
-    glColor3f(0,0.7,0.7);
-    glVertex3f(ww-200,16,0);
-    glVertex3f(ww-200,25,0);
-    glVertex3f(cap(selected.repcounter/world->REPRATE)*-93+(ww-107),25,0);
-    glVertex3f(cap(selected.repcounter/world->REPRATE)*-93+(ww-107),16,0);
+    glColor4f(0, 0, 0, 0.7);
+    glVertex3f(ww - 201, 15, 0);
+    glVertex3f(ww - 201, 26, 0);
+    glVertex3f(ww - 106, 26, 0);
+    glVertex3f(ww - 106, 15, 0);
+    glColor3f(0, 0.7, 0.7);
+    glVertex3f(ww - 200, 16, 0);
+    glVertex3f(ww - 200, 25, 0);
+    glVertex3f(cap(selected.repcounter / world->REPRATE) * -93 + (ww - 107), 25,
+               0);
+    glVertex3f(cap(selected.repcounter / world->REPRATE) * -93 + (ww - 107), 16,
+               0);
 
     //health indicator
-    glColor4f(0,0,0,0.7);
-    glVertex3f(ww-301,15,0);
-    glVertex3f(ww-301,26,0);
-    glVertex3f(ww-206,26,0);
-    glVertex3f(ww-206,15,0);
-    glColor3f(0,0.8,0);
-    glVertex3f(ww-300,16,0);
-    glVertex3f(ww-300,25,0);
-    glVertex3f(selected.health/2.0*93+(ww-300),25,0);
-    glVertex3f(selected.health/2.0*93+(ww-300),16,0);
+    glColor4f(0, 0, 0, 0.7);
+    glVertex3f(ww - 301, 15, 0);
+    glVertex3f(ww - 301, 26, 0);
+    glVertex3f(ww - 206, 26, 0);
+    glVertex3f(ww - 206, 15, 0);
+    glColor3f(0, 0.8, 0);
+    glVertex3f(ww - 300, 16, 0);
+    glVertex3f(ww - 300, 25, 0);
+    glVertex3f(selected.health / 2.0 * 93 + (ww - 300), 25, 0);
+    glVertex3f(selected.health / 2.0 * 93 + (ww - 300), 16, 0);
     glEnd();
 
     //draw Ghost Agent
-//    drawAgent(selected, ww-350, 80, true);
+    drawUnit(selected, ww - 350, 80, true);
 
     //write text and values
     //Agent ID
     sprintf(buf, "ID: %d", selected.id);
-    RenderString(ww-380,
-                 25, GLUT_BITMAP_HELVETICA_12,
-                 buf, 0.8f, 1.0f, 1.0f);
+    RenderString(ww - 380, 25, GLUT_BITMAP_HELVETICA_12, buf, 0.8f, 1.0f, 1.0f);
 
     //Health
     sprintf(buf, "Health: %.2f/2", selected.health);
-    RenderString(ww-300,
+    RenderString(ww - 300,
                  25, GLUT_BITMAP_HELVETICA_12,
                  buf, 0.8f, 1.0f, 1.0f);
 
     //Repcounter
     sprintf(buf, "Child: %.2f/%.0f", selected.repcounter, world->REPRATE);
-    RenderString(ww-200,
+    RenderString(ww - 200,
                  25, GLUT_BITMAP_HELVETICA_12,
                  buf, 0.8f, 1.0f, 1.0f);
-
-    //Stomach
-//		sprintf(buf, "H%.1f F%.1f C%.1f", selected.stomach[Stomach::PLANT], selected.stomach[Stomach::FRUIT],
-//			selected.stomach[Stomach::MEAT]);
-//		RenderString(ww-100,
-//					 25, GLUT_BITMAP_HELVETICA_12,
-//					 buf, 0.8f, 1.0f, 1.0f);
-
-    if(selected.isHerbivore()) sprintf(buf, "\"Herbivore\"");
-    else if(selected.isFrugivore()) sprintf(buf, "\"Frugivore\"");
-    else if(selected.isCarnivore()) sprintf(buf, "\"Carnivore\"");
-    else sprintf(buf, "\"Dead\"...");
-    RenderString(ww-100,
-                 40, GLUT_BITMAP_HELVETICA_12,
-                 buf, 0.8f, 1.0f, 1.0f);
-
-    //age
-    sprintf(buf, "Age: %d", selected.age);
-    RenderString(ww-300,
-                 40, GLUT_BITMAP_HELVETICA_12,
-                 buf, 0.8f, 1.0f, 1.0f);
-
-    //Generation
-    sprintf(buf, "Gen: %d", selected.gencount);
-    RenderString(ww-200,
-                 40, GLUT_BITMAP_HELVETICA_12,
-                 buf, 0.8f, 1.0f, 1.0f);
-
-    //Temperature Preference
-    if(selected.temperature_preference<0.3) sprintf(buf, "Heat-loving(%.3f)", selected.temperature_preference);
-    else if (selected.temperature_preference>0.7) sprintf(buf, "Cold-loving(%.3f)", selected.temperature_preference);
-    else sprintf(buf, "Temperate(%.3f)", selected.temperature_preference);
-    RenderString(ww-300,
-                 55, GLUT_BITMAP_HELVETICA_12,
-                 buf, 0.8f, 1.0f, 1.0f);
-
-    //Lung-type
-    if(selected.lungs<0.3) sprintf(buf, "Aquatic(%.3f)", selected.lungs);
-    else if (selected.lungs>0.7) sprintf(buf, "Terrestrial(%.3f)", selected.lungs);
-    else sprintf(buf, "Amphibious(%.3f)", selected.lungs);
-    RenderString(ww-200,
-                 55, GLUT_BITMAP_HELVETICA_12,
-                 buf, 0.8f, 1.0f, 1.0f);
-
-    //Radius
-    sprintf(buf, "Radius: %.2f", selected.radius);
-    RenderString(ww-100,
-                 55, GLUT_BITMAP_HELVETICA_12,
-                 buf, 0.8f, 1.0f, 1.0f);
-
-
-    //Mutrates
-    sprintf(buf, "Mutrate1: %.3f", selected.MUTRATE1);
-    RenderString(ww-300,
-                 70, GLUT_BITMAP_HELVETICA_12,
-                 buf, 0.8f, 1.0f, 1.0f);
-
-    sprintf(buf, "Mutrate2: %.3f", selected.MUTRATE2);
-    RenderString(ww-200,
-                 70, GLUT_BITMAP_HELVETICA_12,
-                 buf, 0.8f, 1.0f, 1.0f);
-
-    //Metabolism
-    sprintf(buf, "Metab: %.2f", selected.metabolism);
-    RenderString(ww-100,
-                 70, GLUT_BITMAP_HELVETICA_12,
-                 buf, 0.8f, 1.0f, 1.0f);
-
-    //Hybrid
-    if(selected.hybrid) sprintf(buf, "Hybrid");
-    else sprintf(buf, "Budded");
-    RenderString(ww-300,
-                 85, GLUT_BITMAP_HELVETICA_12,
-                 buf, 0.8f, 1.0f, 1.0f);
-
-    //Giving
-    if(selected.give>0.5) sprintf(buf, "Generous");
-    else if(selected.give>0.01) sprintf(buf, "Autocentric");
-    else sprintf(buf, "Selfish");
-    RenderString(ww-200,
-                 85, GLUT_BITMAP_HELVETICA_12,
-                 buf, 0.8f, 1.0f, 1.0f);
-
-    //Spike
-    if(selected.isSpikey(world->SPIKELENGTH)){
-      float mw= selected.w1>selected.w2 ? selected.w1 : selected.w2;
-      if(mw<0) mw= 0;
-      float val= world->SPIKEMULT*selected.spikeLength*mw;
-      sprintf(buf, "Spike: %.2f h", val);
-    } else sprintf(buf, "Not Spikey");
-    RenderString(ww-100,
-                 85, GLUT_BITMAP_HELVETICA_12,
-                 buf, 0.8f, 1.0f, 1.0f);
-
-    //Stats: Children
-    sprintf(buf, "Children: %d", selected.children);
-    RenderString(ww-300,
-                 100, GLUT_BITMAP_HELVETICA_12,
-                 buf, 0.8f, 1.0f, 1.0f);
-
-    //Trait: Strength
-    if(selected.strength>0.7) sprintf(buf, "Strong!");
-    else if(selected.strength>0.3) sprintf(buf, "Not Weak");
-    else sprintf(buf, "Weak!");
-    RenderString(ww-200,
-                 100, GLUT_BITMAP_HELVETICA_12,
-                 buf, 0.8f, 1.0f, 1.0f);
-
-    //Stats: Killed
-    sprintf(buf, "Killed: %d", selected.killed);
-    RenderString(ww-100,
-                 100, GLUT_BITMAP_HELVETICA_12,
-                 buf, 0.8f, 1.0f, 1.0f);
-
-    //Trait: Num Babies
-    sprintf(buf, "Num Babies: %d", selected.numbabies);
-    RenderString(ww-300,
-                 115, GLUT_BITMAP_HELVETICA_12,
-                 buf, 0.8f, 1.0f, 1.0f);
-
-    //Output: Sexual projection
-    if(selected.sexproject) sprintf(buf, "Sexting");
-    else sprintf(buf, "Not Sexting");
-    RenderString(ww-200,
-                 115, GLUT_BITMAP_HELVETICA_12,
-                 buf, 0.8f, 1.0f, 1.0f);
-
-    //Species ID (Genome)
-    sprintf(buf, "Gene: %d", selected.species);
-    RenderString(ww-100,
-                 115, GLUT_BITMAP_HELVETICA_12,
-                 buf, 0.8f, 1.0f, 1.0f);
-
-    //Jumping status
-    if(selected.jump<=0) sprintf(buf, "Grounded");
-    else sprintf(buf, "Airborne!");
-    RenderString(ww-300,
-                 130, GLUT_BITMAP_HELVETICA_12,
-                 buf, 0.8f, 1.0f, 1.0f);
-
-    //Grab status
-    if(selected.grabbing>0.5){
-      if(selected.grabID==-1) sprintf(buf, "Seeking");
-      else sprintf(buf, "Hold: %d", selected.grabID);
-    } else sprintf(buf, "Isolated");
-    RenderString(ww-200,
-                 130, GLUT_BITMAP_HELVETICA_12,
-                 buf, 0.8f, 1.0f, 1.0f);
-
-    //Stats: Biting
-    if(selected.jawrend!=0) sprintf(buf, "Bite: %.2f h", abs(selected.jawPosition*world->HEALTHLOSS_JAWSNAP));
-    else sprintf(buf, "Not Biting");
-    RenderString(ww-100,
-                 130, GLUT_BITMAP_HELVETICA_12,
-                 buf, 0.8f, 1.0f, 1.0f);
-
   }
 
   /*start clean up*/

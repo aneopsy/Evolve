@@ -19,6 +19,7 @@
 #include "IView.hpp"
 #include "World.hpp"
 #include "glui.h"
+#include "Forms.hpp"
 
 class GLView;
 
@@ -73,7 +74,10 @@ public:
 
     void glCreateMenu();
     int m_id;
-    int win1;
+    int mainWin;
+    int profileWin;
+    int settingsWin;
+    int statsWin;
     void gluiCreateMenu();
 
 private:
@@ -84,7 +88,7 @@ private:
     int              live_paused;
     int              live_fastmode;
     int              live_skipdraw;
-    int              live_Unitsvis;
+    int              live_unitsvis;
     int              live_layersvis;
     int              live_profilevis;
     int              live_selection;

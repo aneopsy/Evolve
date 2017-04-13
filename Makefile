@@ -177,6 +177,33 @@ src/Brain/DWRAON.cpp.s:
 	$(MAKE) -f CMakeFiles/evolve.dir/build.make CMakeFiles/evolve.dir/src/Brain/DWRAON.cpp.s
 .PHONY : src/Brain/DWRAON.cpp.s
 
+src/Forms.o: src/Forms.cpp.o
+
+.PHONY : src/Forms.o
+
+# target to build an object file
+src/Forms.cpp.o:
+	$(MAKE) -f CMakeFiles/evolve.dir/build.make CMakeFiles/evolve.dir/src/Forms.cpp.o
+.PHONY : src/Forms.cpp.o
+
+src/Forms.i: src/Forms.cpp.i
+
+.PHONY : src/Forms.i
+
+# target to preprocess a source file
+src/Forms.cpp.i:
+	$(MAKE) -f CMakeFiles/evolve.dir/build.make CMakeFiles/evolve.dir/src/Forms.cpp.i
+.PHONY : src/Forms.cpp.i
+
+src/Forms.s: src/Forms.cpp.s
+
+.PHONY : src/Forms.s
+
+# target to generate assembly for a file
+src/Forms.cpp.s:
+	$(MAKE) -f CMakeFiles/evolve.dir/build.make CMakeFiles/evolve.dir/src/Forms.cpp.s
+.PHONY : src/Forms.cpp.s
+
 src/Main.o: src/Main.cpp.o
 
 .PHONY : src/Main.o
@@ -300,6 +327,9 @@ help:
 	@echo "... src/Brain/DWRAON.o"
 	@echo "... src/Brain/DWRAON.i"
 	@echo "... src/Brain/DWRAON.s"
+	@echo "... src/Forms.o"
+	@echo "... src/Forms.i"
+	@echo "... src/Forms.s"
 	@echo "... src/Main.o"
 	@echo "... src/Main.i"
 	@echo "... src/Main.s"

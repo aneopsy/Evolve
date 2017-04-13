@@ -12,7 +12,6 @@
 
 #include <iostream>
 #include <DRAWS.hpp>
-#include <DRAWS.hpp>
 #include <Utils.hpp>
 #include <ctime>
 
@@ -20,24 +19,33 @@
 #include <glui.h>
 #include "World.hpp"
 #include "glview.hpp"
-#include "Settings.hpp"
 
-GLView* GLVIEW = new GLView(0);
+GLView *GLVIEW = new GLView(0);
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
   srand(time(0));
 
-  printf( "GLUI version: %3.2f\n", GLUI_Master.get_version() );
-  Evolve::World* world = new Evolve::World();
+  printf("GLUI version: %3.2f\n", GLUI_Master.get_version());
+  Evolve::World *world = new Evolve::World();
   GLVIEW->setWorld(world);
   world->setDebug(true);
 
   glutInit(&argc, argv);
+
   glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
-  glutInitWindowPosition(250,20);
+  glutInitWindowPosition(conf::WIDTH - 300, 0);
+  glutInitWindowSize(300, conf::WHEIGHT);
+  GLVIEW->profileWin = glutCreateWindow("Profile");
+
+  glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
+  glutInitWindowPosition(0, conf::HEIGHT - 250);
+  glutInitWindowSize(conf::WIDTH, 250);
+  GLVIEW->statsWin = glutCreateWindow("Stats");
+
+  glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
+  glutInitWindowPosition(250, 0);
   glutInitWindowSize(conf::WWIDTH, conf::WHEIGHT);
-  GLVIEW->win1= glutCreateWindow("Evolve");
+  GLVIEW->mainWin = glutCreateWindow("Evolve");
 
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -55,13 +63,14 @@ int main(int argc, char **argv)
   glutMotionFunc(gl_processMouseActiveMotion);
   glutPassiveMotionFunc(gl_processMousePassiveMotion);
 
+  GLVIEW->gluiCreateMenu();
   GLVIEW->glCreateMenu();
 
-  try{
+  try {
     glutMainLoop();
-  } catch( std::bad_alloc &){
+  } catch (std::bad_alloc &) {
     printf("Out of memory!\n");
-  } catch( std::bad_exception &){
+  } catch (std::bad_exception &) {
     printf("Error!\n");
   }
   return 0;

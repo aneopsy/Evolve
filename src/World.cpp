@@ -26,13 +26,27 @@ Evolve::World::World() :
   reset();
   spawn();
   printf("World Made!\n");
+  REPRATE = 1;
 }
 
 void Evolve::World::reset() {
   addEvent("World Started!");
 }
 
-void Evolve::World::spawn() {}
+void Evolve::World::spawn() {
+  t_brain settings;
+  settings.nbneuron = 100;
+  settings.inputsize = 20;
+  settings.outputsize = 9;
+  settings.directinput = 0.1;
+  settings.deadconns = 0.3;
+  settings.changeconn = 0.15;
+  settings.memconn = 0.01;
+  settings.learnrate = 0.001;
+  Unit u(settings, MEANRADIUS, REPRATE, MUTCHANCE, MUTSIZE);
+  u.id=SELECTION;
+  units.push_back(u);
+}
 
 void Evolve::World::cellsLandMasses() {}
 
@@ -56,7 +70,14 @@ void Evolve::World::setSelection(int type) { (void) type; }
 
 void Evolve::World::setSelectedUnit(int idx) { (void) idx; }
 
-int Evolve::World::getSelectedUnit() const {}
+int Evolve::World::getSelectedUnit() const {
+  int idx = -1;
+#pragma omp parallel for
+  for (int i = 0; i < (int) units.size(); i++) {
+    if (units[i].id == SELECTION) idx = i;
+  }
+  return idx;
+}
 
 int Evolve::World::getClosestRelative(int idx) const { (void) idx; }
 

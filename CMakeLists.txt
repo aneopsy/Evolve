@@ -13,6 +13,7 @@ SET(SRCS src/Main.cpp
         src/glview.cpp
         src/World.cpp
         src/Unit.cpp
+        src/Forms.cpp
         )
 
 add_executable(evolve "${SRCS}")
