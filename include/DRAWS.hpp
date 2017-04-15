@@ -18,8 +18,8 @@
 namespace DRAWS {
     namespace Input {
         enum {
-            EYES  = 0,
-            xEYES = EYES + NUMEYES * 3 - 1,
+            EYES,
+            xEYES= EYES+NUMEYES*3-1, //I strongly recommend keeping EYES and xEYES together in this order
             HEALTH,
             RANDOM,
             CLOCK1,
@@ -35,35 +35,37 @@ namespace DRAWS {
             MEAT_SMELL,
             HAZARD_SMELL,
             WATER_SMELL,
-            INPUT_SIZE
-        };
-    };
 
-    //LEFT RIGHT BOOST JUMP R G B VOLUME GIVING SPIKE CHOICE STIMULANT
-    // 0	 1	   2    3   4 5 6   7	   8	  9	    10		11
+            //Don't add beyond this entry!
+                    INPUT_SIZE
+        };};
+
     namespace Output {
         enum {
-            LEFT_WHEEL_F = 0,
-            RIGHT_WHEEL_F,
-            LEFT_WHEEL_B,
-            RIGHT_WHEEL_B,
-            BOOST,
-            JUMP,
-            RED,
-            GRE,
-            BLU,
-            VOLUME,
-            TONE,
-            GIVE,
-            SPIKE,
-            JAW,
-            GRAB,
-            PROJECT,
-            STIMULANT,
-            CLOCKF3,
-            OUTPUT_SIZE
-        };
-    };
+            //LEFT RIGHT BOOST JUMP R G B VOLUME GIVING SPIKE CHOICE STIMULANT
+            // 0	 1	   2    3   4 5 6   7	   8	  9	    10		11
+                    LEFT_WHEEL_F= 0,
+                    RIGHT_WHEEL_F,
+                    LEFT_WHEEL_B,
+                    RIGHT_WHEEL_B,
+                    BOOST,
+                    JUMP,
+                    RED,
+                    GRE,
+                    BLU,
+                    VOLUME,
+                    TONE,
+                    GIVE,
+                    SPIKE,
+                    JAW,
+                    GRAB,
+                    PROJECT,
+                    STIMULANT,
+                    CLOCKF3,
+
+            //don't add beyond this entry!
+                    OUTPUT_SIZE
+        };};
 
     class Neuron : public ANeuron {
     public:

@@ -21,38 +21,38 @@
 
 namespace Evolve {
     typedef struct s_stats {
-        int   STATherbivores;
-        int   STATfrugivores;
-        int   STATcarnivores;
-        int   STATterrans;
-        int   STATaquatic;
-        int   STATalive;
-        int   STATdead;
-        int   STATspiked;
-        int   STAThybrids;
-        int   STATbestherbi;
-        int   STATbestfrugi;
-        int   STATbestcarni;
-        int   STATbestterran;
-        int   STATbestaquatic;
-        int   STATbesthybrid;
-        int   STATplants;
-        int   STATfruits;
-        int   STATmeats;
-        int   STAThazards;
-        float STATallplant;
-        float STATallfruit;
-        float STATallmeat;
-        float STATallhazard;
+        int   herbivores;
+        int   frugivores;
+        int   carnivores;
+        int   terrans;
+        int   aquatic;
+        int   alive;
+        int   dead;
+        int   spiked;
+        int   hybrids;
+        int   bestherbi;
+        int   bestfrugi;
+        int   bestcarni;
+        int   bestterran;
+        int   bestaquatic;
+        int   besthybrid;
+        int   plants;
+        int   fruits;
+        int   meats;
+        int   hazards;
+        float allplant;
+        float allfruit;
+        float allmeat;
+        float allhazard;
     } t_stats;
 
     typedef struct s_num {
-        int numHerbivore[conf::RECORD_SIZE];
-        int numCarnivore[conf::RECORD_SIZE];
-        int numFrugivore[conf::RECORD_SIZE];
-        int numHybrid[conf::RECORD_SIZE];
-        int numDead[conf::RECORD_SIZE];
-        int numTotal[conf::RECORD_SIZE];
+        int herbivore[conf::RECORD_SIZE];
+        int carnivore[conf::RECORD_SIZE];
+        int frugivore[conf::RECORD_SIZE];
+        int hybrid[conf::RECORD_SIZE];
+        int dead[conf::RECORD_SIZE];
+        int total[conf::RECORD_SIZE];
     } t_num;
 
     class World {
@@ -246,11 +246,10 @@ namespace Evolve {
         void cellsLandMasses();
         void findStats();
 
-        std::vector<std::string> tips;
-        bool                     CLOSED;
-        bool                     DEBUG;
-        bool                     AUTOSELECT;
-        int                      SELECTION;
+        bool                     _closed;
+        bool                     _debug;
+        bool                     _autoselect;
+        int                      _selection;
         t_stats                  stats;
     };
 }

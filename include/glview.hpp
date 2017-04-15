@@ -40,6 +40,21 @@ void glui_handleCloses(int action);
 
 class GLView : public Evolve::IView {
 
+    typedef struct s_live {
+        int worldclosed;
+        int paused;
+        int fastmode;
+        int skipdraw;
+        int unitsvis;
+        int layersvis;
+        int profilevis;
+        int selection;
+        int follow;
+        int autosave;
+        int grid;
+        int debug;
+    } t_live;
+
 public:
     GLView(Evolve::World *w);
     virtual ~GLView();
@@ -69,52 +84,44 @@ public:
     void changeSize(int w, int h);
     void handleIdle();
     void renderScene();
+    void renderProfile();
+    void renderStats();
     void handleRW(int action);
     void handleCloses(int action);
 
     void glCreateMenu();
+    void gluiCreateMenu();
+
     int m_id;
     int mainWin;
     int profileWin;
     int settingsWin;
     int statsWin;
-    void gluiCreateMenu();
 
 private:
     void countdownEvents();
 
-    Evolve::World    *world;
-    int              live_worldclosed;
-    int              live_paused;
-    int              live_fastmode;
-    int              live_skipdraw;
-    int              live_unitsvis;
-    int              live_layersvis;
-    int              live_profilevis;
-    int              live_selection;
-    int              live_follow;
-    int              live_autosave;
-    int              live_grid;
-    int              live_debug;
-    bool             debug;
-    GLUI             *Menu;
-    GLUI_FileBrowser *Browser;
-    std::string      file_name;
-    GLUI             *Loader;
-    GLUI             *Saver;
-    GLUI             *Alert;
-    GLUI_EditText    *Filename;
-    char             filename[30];
-    char             buf[100];
-    char             buf2[10];
-    int              modcounter;
-    int              lastUpdate;
-    int              frames;
-    float            scalemult;
-    float            xtranslate, ytranslate;
-    int              downb[3];
-    int              mousex, mousey;
-    bool             mousedrag;
+    Evolve::World    *_world;
+    t_live           _live;
+    bool             _debug;
+    GLUI             *_menu;
+    GLUI_FileBrowser *_Browser;
+    std::string      _file_name;
+    GLUI             *_Loader;
+    GLUI             *_Saver;
+    GLUI             *_Alert;
+    GLUI_EditText    *_Filename;
+    char             _filename[30];
+    char             _buf[100];
+    char             _buf2[10];
+    int              _modcounter;
+    int              _lastUpdate;
+    int              _frames;
+    float            _scalemult;
+    int              _downb[7];
+    Vector2f         _translate;
+    Vector2d         _mouse;
+    bool             _mousedrag;
 };
 
 #endif // GLVIEW_H
