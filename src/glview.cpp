@@ -1327,7 +1327,6 @@ void GLView::drawUnit(const Evolve::Unit &unit, float x, float y, bool ghost) {
       }
     }
 
-    //draw indicator of this unit... used for various events
     if (unit.indicator > 0) {
       glBegin(GL_POLYGON);
       glColor4f(unit.ir, unit.ig, unit.ib, 0.75);
