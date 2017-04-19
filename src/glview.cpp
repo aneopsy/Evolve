@@ -684,13 +684,6 @@ void GLView::renderProfile() {
     RenderString(((ww - 15) + 175) / 2 - (strlen(_buf) * 2),
                  75, GLUT_BITMAP_HELVETICA_12,
                  _buf, 0.8f, 1.0f, 1.0f);
-    //Stomac
-    sprintf(_buf, "H%.1f F%.1f C%.1f", selected.stomach[Stomach::PLANT],
-            selected.stomach[Stomach::FRUIT],
-            selected.stomach[Stomach::MEAT]);
-    RenderString(ww - 100,
-                 25, GLUT_BITMAP_HELVETICA_12,
-                 _buf, 0.8f, 1.0f, 1.0f);
 
     if (selected.isHerbivore()) sprintf(_buf, "Herbivore");
     else if (selected.isFrugivore()) sprintf(_buf, "Frugivore");
