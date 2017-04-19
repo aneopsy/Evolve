@@ -12,6 +12,7 @@
 
 #include <Utils.hpp>
 #include <Settings.hpp>
+#include <Color.hpp>
 #include "glview.hpp"
 
 void gl_processNormalKeys(unsigned char key, int x, int y) {
@@ -273,11 +274,11 @@ void GLView::menu(int key) {
     _world->selectedBabys();
   } else if (key == '~') { // ~ mutate selected
     _world->selectedMutate();
-  } else if (key == 119) { //w (move faster)
+  } else if (key == 'z') { //w (move faster)
     _world->pcontrol = true;
     _world->pleft    = capm(_world->pleft + 0.08, -1, 1);
     _world->pright   = capm(_world->pright + 0.08, -1, 1);
-  } else if (key == 97) { //a (turn left)
+  } else if (key == 'q') { //a (turn left)
     _world->pcontrol = true;
     _world->pleft    = capm(
             _world->pleft - 0.05 + (_world->pright - _world->pleft) * 0.05, -1,
@@ -285,11 +286,11 @@ void GLView::menu(int key) {
     _world->pright   = capm(
             _world->pright + 0.05 + (_world->pleft - _world->pright) * 0.05, -1,
             1);
-  } else if (key == 115) { //s (move slower)
+  } else if (key == 's') { //s (move slower)
     _world->pcontrol = true;
     _world->pleft    = capm(_world->pleft - 0.08, -1, 1);
     _world->pright   = capm(_world->pright - 0.08, -1, 1);
-  } else if (key == 100) { //d (turn right)
+  } else if (key == 'd') { //d (turn right)
     _world->pcontrol = true;
     _world->pleft    = capm(
             _world->pleft + 0.05 + (_world->pright - _world->pleft) * 0.05, -1,
@@ -297,7 +298,7 @@ void GLView::menu(int key) {
     _world->pright   = capm(
             _world->pright - 0.05 + (_world->pleft - _world->pright) * 0.05, -1,
             1);
-  } else if (key == 999) { //player control
+  } else if (key == 't') { //player control
     _world->setControl(!_world->pcontrol);
     glutGet(GLUT_MENU_NUM_ITEMS);
     if (_world->pcontrol) glutChangeToMenuEntry(1, "Release Unit", 999);
@@ -1043,6 +1044,40 @@ void GLView::renderProfile() {
     glVertex3f(ww - 30, wh - 180, 0);
 
     glEnd();
+      glBegin(GL_LINES);
+      for (int j    = 0; j < conf::BRAINSIZE; j++) {
+        for (int k = 0; k < CONNS; k++) {
+          int j2 = selected.brain._neurons[j].id[k];
+
+          float x1 = 0;
+          float y1 = 0;
+          if (j < Input::INPUT_SIZE) {
+            y1 = j * ss;
+            x1 = yy;
+          } else {
+            y1 = ((j - Input::INPUT_SIZE) % 30) * ss;
+            x1 = yy + ss + 2 * ss * ((int) (j - Input::INPUT_SIZE) / 30);
+          }
+
+          float x2 = 0;
+          float y2 = 0;
+          if (j2 < Input::INPUT_SIZE) {
+            y2 = j2 * ss;
+            x2 = yy;
+          } else {
+            y2 = ((j2 - Input::INPUT_SIZE) % 30) * ss;
+            x2 = yy + ss + 2 * ss * ((int) (j2 - Input::INPUT_SIZE) / 30);
+          }
+
+          float ww = selected.brain._neurons[j].w[k];
+          if (ww < 0) glColor3f(-ww, 0, 0);
+          else glColor3f(0, 0, ww);
+
+          glVertex3f(x1, y1, 0);
+          glVertex3f(x2, y2, 0);
+        }
+    }
+    glEnd();
   }
 
   glPopMatrix();
@@ -1149,11 +1184,9 @@ void GLView::drawUnit(const Evolve::Unit &unit, float x, float y, bool ghost) {
 
   if (_live.unitsvis != Visual::NONE) {
 
-    //color assignment
     float red        = 0, gre = 0, blu = 0;
     float discomfort = 0;
 
-    //first, calculate colors which also have indicator boxes
     discomfort = cap(sqrt(abs(2.0 * abs(unit.pos.y / conf::HEIGHT - 0.5) -
                               unit.temperature_preference)));
     if (discomfort < 0.005) discomfort = 0;
@@ -1165,17 +1198,18 @@ void GLView::drawUnit(const Evolve::Unit &unit, float x, float y, bool ghost) {
                             pow(unit.stomach[Stomach::FRUIT], 2) -
                             pow(unit.stomach[Stomach::MEAT], 2));
 
-    float species_red = (cos((float) unit.species / 97 * M_PI) + 1.0) / 2.0;
-    float species_gre = (sin((float) unit.species / 47 * M_PI) + 1.0) / 2.0;
-    float species_blu = (cos((float) unit.species / 21 * M_PI) + 1.0) / 2.0;
+    Evolve::Color species(
+            ((float) cos((float) unit.species / 97.f * M_PI) + 1.0f) / 2.0f,
+            ((float) sin((float) unit.species / 47.f * M_PI) + 1.0f) / 2.0f,
+            ((float) cos((float) unit.species / 21.f * M_PI) + 1.0f) / 2.0f);
 
-    float metab_red = unit.metabolism;
-    float metab_gre = 0.6 * unit.metabolism;
-    float metab_blu = 0.2 + 0.4 * abs(unit.metabolism * 2 - 1);
+    Evolve::Color metab(unit.metabolism,
+                        0.6f * unit.metabolism,
+                        0.2f + 0.4f * abs(unit.metabolism * 2 - 1));
 
-    float lung_red = 0.2 + 2 * unit.lungs * (1 - unit.lungs);
-    float lung_gre = 0.4 * unit.lungs + 0.3;
-    float lung_blu = 0.6 * (1 - unit.lungs) + 0.2;
+    Evolve::Color lung(0.2f + 2.f * unit.lungs * (1 - unit.lungs),
+                       0.4f * unit.lungs + 0.3f,
+                       0.6f * (1 - unit.lungs) + 0.2f);
     //land (0.2,0.7,0.2), amph (0.2,0.5,0.5), water (0.2,0.3,0.8)
 
 
@@ -1200,9 +1234,9 @@ void GLView::drawUnit(const Evolve::Unit &unit, float x, float y, bool ghost) {
       blu = unit.volume;
 
     } else if (_live.unitsvis == Visual::SPECIES) { //species
-      red = species_red;
-      gre = species_gre;
-      blu = species_blu;
+      red = species.getRed();
+      gre = species.getGreen();
+      blu = species.getBlue();
 
     } else if (_live.unitsvis ==
                Visual::CROSSABLE) { //crossover-compatable to selection
@@ -1234,14 +1268,14 @@ void GLView::drawUnit(const Evolve::Unit &unit, float x, float y, bool ghost) {
                                                            unit.health / 2);
 
     } else if (_live.unitsvis == Visual::METABOLISM) {
-      red = metab_red;
-      gre = metab_gre;
-      blu = metab_blu;
+      red = metab.getRed();
+      gre = metab.getGreen();
+      blu = metab.getBlue();
 
     } else if (_live.unitsvis == Visual::LUNGS) {
-      red = lung_red;
-      gre = lung_gre;
-      blu = lung_blu;
+      red = lung.getRed();
+      gre = lung.getGreen();
+      blu = lung.getBlue();
     }
 
 
@@ -1317,47 +1351,6 @@ void GLView::drawUnit(const Evolve::Unit &unit, float x, float y, bool ghost) {
           glColor4f(0, 0.5, 0, 0.25);
           Forms::drawCircle(Vector2d(x, y), _world->FOOD_SHARING_DISTANCE);
           glEnd();
-        }
-      }
-
-      if (_world->isDebug()) {
-        glEnd();
-        glBegin(GL_LINES);
-        float    offx = 0;
-        int      ss   = 30;
-        int      yy   = ss;
-        int      xx   = ss;
-        for (int j    = 0; j < conf::BRAINSIZE; j++) {
-          for (int k = 0; k < CONNS; k++) {
-            int j2 = unit.brain._neurons[j].id[k];
-
-            float x1 = 0;
-            float y1 = 0;
-            if (j < Input::INPUT_SIZE) {
-              x1 = j * ss;
-              y1 = yy;
-            } else {
-              x1 = ((j - Input::INPUT_SIZE) % 30) * ss;
-              y1 = yy + ss + 2 * ss * ((int) (j - Input::INPUT_SIZE) / 30);
-            }
-
-            float x2 = 0;
-            float y2 = 0;
-            if (j2 < Input::INPUT_SIZE) {
-              x2 = j2 * ss;
-              y2 = yy;
-            } else {
-              x2 = ((j2 - Input::INPUT_SIZE) % 30) * ss;
-              y2 = yy + ss + 2 * ss * ((int) (j2 - Input::INPUT_SIZE) / 30);
-            }
-
-            float ww = unit.brain._neurons[j].w[k];
-            if (ww < 0) glColor3f(-ww, 0, 0);
-            else glColor3f(0, 0, ww);
-
-            glVertex3f(x1, y1, 0);
-            glVertex3f(x2, y2, 0);
-          }
         }
       }
     }
@@ -1546,9 +1539,7 @@ glLineWidth(2);
     }
     glEnd();
 
-    //some final debug stuff that is shown even on ghosts:
     if (_world->isDebug() || ghost) {
-      //wheels and wheel speeds
       float wheelangle = unit.angle + M_PI / 2;
       glBegin(GL_LINES);
       glColor3f(0, 1, 0);
@@ -1569,17 +1560,17 @@ glLineWidth(2);
 
       glBegin(GL_POLYGON);
       glColor3f(0, 1, 0);
-      Forms::drawCircle(Vector2d(+unit.radius / 2 * cos(wheelangle),
+      Forms::drawCircle(Vector2d(x+unit.radius / 2 * cos(wheelangle),
                                  y + unit.radius / 2 * sin(wheelangle)), 1);
       glEnd();
       wheelangle += M_PI;
       glBegin(GL_POLYGON);
-      Forms::drawCircle(Vector2d(+unit.radius / 2 * cos(wheelangle),
+      Forms::drawCircle(Vector2d(x+unit.radius / 2 * cos(wheelangle),
                                  y + unit.radius / 2 * sin(wheelangle)), 1);
       glEnd();
     }
 
-    if (!ghost) { //only draw extra infos if not a ghost
+    if (!ghost) {
 
       if (_scalemult > .3) {//hide extra visual data if really far away
 
@@ -1688,10 +1679,10 @@ glLineWidth(2);
             glColor3f(discomfort, (2 - discomfort) / 2,
                       (1 - discomfort)); //temp discomfort
           else if (i == 4)
-            glColor3f(lung_red, lung_gre,
-                      lung_blu); //land/water lungs requirement
+            glColor3f(lung.getRed(), lung.getGreen(),
+                      lung.getBlue()); //land/water lungs requirement
           else if (i == 7)
-            glColor3f(metab_red, metab_gre, metab_blu); //metabolism
+            glColor3f(metab.getRed(), metab.getGreen(), metab.getBlue()); //metabolism
           else if (i == 5) { //ear 1 volume value heard
             float hear = unit.in[Input::HEARING1];
             if (hear == 0) continue;
@@ -1732,8 +1723,8 @@ glLineWidth(2);
         //species id
         sprintf(_buf2, "%i", unit.species);
         RenderString(x - rp * 1.414, y - rp * 1.414 - 24,
-                     GLUT_BITMAP_HELVETICA_12, _buf2, species_red, species_gre,
-                     species_blu);
+                     GLUT_BITMAP_HELVETICA_12, _buf2, species.getRed(), species.getGreen(),
+                     species.getBlue());
       }
     }
   }

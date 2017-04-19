@@ -35,6 +35,6 @@ SET(SRCS src/Main.cpp
         src/World.cpp
         src/Unit.cpp
         src/Forms.cpp
-        )
+        include/Color.hpp)
 
 add_executable(evolve "${SRCS}")
