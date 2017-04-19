@@ -1250,9 +1250,7 @@ void GLView::drawUnit(const Evolve::Unit &unit, float x, float y, bool ghost) {
       blu = lung.getBlue();
     }
 
-
     //handle selected unit
-
     if (unit.id == _world->getSelection() && !ghost) {
       //draw selection
       glLineWidth(2);
@@ -1272,15 +1270,7 @@ void GLView::drawUnit(const Evolve::Unit &unit, float x, float y, bool ghost) {
       if (_scalemult > .2) {
         glPushMatrix();
         glTranslatef(x - 90, y + 23, 0);
-
-        //draw profile(s)
-        float col;
-        float yy = 15;
-        float xx = 15;
-        float ss = 16;
-
         glPopMatrix();
-
         if (_world->isDebug()) {
           //draw DIST range on selected in DEBUG
           glBegin(GL_LINES);
