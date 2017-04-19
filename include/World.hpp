@@ -20,6 +20,20 @@
 #include "Settings.hpp"
 
 namespace Evolve {
+    namespace Layer {
+        enum {
+            LAND = 0,
+            PLANTS,
+            FRUITS,
+            MEATS,
+            HAZARDS,
+            TEMP,
+            LIGHT,
+            TEMPLAYER,
+
+            LAYERS
+        };
+    };
     typedef struct s_stats {
         int   herbivores;
         int   frugivores;
@@ -246,11 +260,11 @@ namespace Evolve {
         void cellsLandMasses();
         void findStats();
 
-        bool                     _closed;
-        bool                     _debug;
-        bool                     _autoselect;
-        int                      _selection;
-        t_stats                  stats;
+        bool    _closed;
+        bool    _debug;
+        bool    _autoselect;
+        int     _selection;
+        t_stats stats;
     };
 }
 

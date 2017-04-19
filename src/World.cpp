@@ -24,87 +24,87 @@ Evolve::World::World() :
         pleft(0),
         pinput1(0) {
 
-  MINFOOD= conf::MINFOOD;
-  INITFOODDENSITY= conf::INITFOODDENSITY;
-  INITFRUITDENSITY= conf::INITFRUITDENSITY;
+  MINFOOD          = conf::MINFOOD;
+  INITFOODDENSITY  = conf::INITFOODDENSITY;
+  INITFRUITDENSITY = conf::INITFRUITDENSITY;
 
-  NUMBOTS= conf::NUMBOTS;
-  ENOUGHBOTS= conf::ENOUGHBOTS;
-  TOOMANYBOTS= conf::TOOMANYBOTS;
+  NUMBOTS     = conf::NUMBOTS;
+  ENOUGHBOTS  = conf::ENOUGHBOTS;
+  TOOMANYBOTS = conf::TOOMANYBOTS;
 
-  REPORTS_PER_EPOCH= conf::REPORTS_PER_EPOCH;
-  FRAMES_PER_EPOCH= conf::FRAMES_PER_EPOCH;
-  FRAMES_PER_DAY= conf::FRAMES_PER_DAY;
+  REPORTS_PER_EPOCH = conf::REPORTS_PER_EPOCH;
+  FRAMES_PER_EPOCH  = conf::FRAMES_PER_EPOCH;
+  FRAMES_PER_DAY    = conf::FRAMES_PER_DAY;
 
-  CONTINENTS= conf::CONTINENTS;
-  OCEANPERCENT= conf::OCEANPERCENT;
-  MOONLIT= conf::MOONLIT;
-  GRAVITYACCEL= conf::GRAVITYACCEL;
-  REACTPOWER= conf::REACTPOWER;
-  SPIKEMULT= conf::SPIKEMULT;
-  BRAINSIZE= conf::BRAINSIZE;
-  BOTSPEED= conf::BOTSPEED;
-  BOOSTSIZEMULT= conf::BOOSTSIZEMULT;
-  SOUNDPITCHRANGE= conf::SOUNDPITCHRANGE;
-  FOODTRANSFER= conf::FOODTRANSFER;
-  MEANRADIUS= conf::MEANRADIUS;
-  SPIKESPEED= conf::SPIKESPEED;
-  FRESHKILLTIME= conf::FRESHKILLTIME;
-  TENDERAGE= conf::TENDERAGE;
-  MINMOMHEALTH= conf::MINMOMHEALTH;
-  FUN= 0;
-  REPRATE= conf::REPRATE;
-  OVERHEAL_REPFILL= conf::OVERHEAL_REPFILL;
+  CONTINENTS       = conf::CONTINENTS;
+  OCEANPERCENT     = conf::OCEANPERCENT;
+  MOONLIT          = conf::MOONLIT;
+  GRAVITYACCEL     = conf::GRAVITYACCEL;
+  REACTPOWER       = conf::REACTPOWER;
+  SPIKEMULT        = conf::SPIKEMULT;
+  BRAINSIZE        = conf::BRAINSIZE;
+  BOTSPEED         = conf::BOTSPEED;
+  BOOSTSIZEMULT    = conf::BOOSTSIZEMULT;
+  SOUNDPITCHRANGE  = conf::SOUNDPITCHRANGE;
+  FOODTRANSFER     = conf::FOODTRANSFER;
+  MEANRADIUS       = conf::MEANRADIUS;
+  SPIKESPEED       = conf::SPIKESPEED;
+  FRESHKILLTIME    = conf::FRESHKILLTIME;
+  TENDERAGE        = conf::TENDERAGE;
+  MINMOMHEALTH     = conf::MINMOMHEALTH;
+  FUN              = 0;
+  REPRATE          = conf::REPRATE;
+  OVERHEAL_REPFILL = conf::OVERHEAL_REPFILL;
 //    LEARNRATE= conf::LEARNRATE;
-  MAXDEVIATION= conf::MAXDEVIATION;
-  MUTCHANCE= conf::MUTCHANCE;
-  MUTSIZE= conf::MUTSIZE;
-  MAXAGE= conf::MAXAGE;
+  MAXDEVIATION     = conf::MAXDEVIATION;
+  MUTCHANCE        = conf::MUTCHANCE;
+  MUTSIZE          = conf::MUTSIZE;
+  MAXAGE           = conf::MAXAGE;
 
-  DIST= conf::DIST;
-  SPIKELENGTH= conf::SPIKELENGTH;
-  TOOCLOSE= conf::TOOCLOSE;
-  FOOD_SHARING_DISTANCE= conf::FOOD_SHARING_DISTANCE;
-  SEXTING_DISTANCE= conf::SEXTING_DISTANCE;
-  GRABBING_DISTANCE= conf::GRABBING_DISTANCE;
+  DIST                  = conf::DIST;
+  SPIKELENGTH           = conf::SPIKELENGTH;
+  TOOCLOSE              = conf::TOOCLOSE;
+  FOOD_SHARING_DISTANCE = conf::FOOD_SHARING_DISTANCE;
+  SEXTING_DISTANCE      = conf::SEXTING_DISTANCE;
+  GRABBING_DISTANCE     = conf::GRABBING_DISTANCE;
 
-  HEALTHLOSS_WHEELS= conf::HEALTHLOSS_WHEELS;
-  HEALTHLOSS_BOOSTMULT= conf::HEALTHLOSS_BOOSTMULT;
-  HEALTHLOSS_BADTEMP= conf::HEALTHLOSS_BADTEMP;
-  HEALTHLOSS_AGING= conf::HEALTHLOSS_AGING;
-  HEALTHLOSS_BRAINUSE= conf::HEALTHLOSS_BRAINUSE;
-  HEALTHLOSS_BUMP= conf::HEALTHLOSS_BUMP;
-  HEALTHLOSS_SPIKE_EXT= conf::HEALTHLOSS_SPIKE_EXT;
-  HEALTHLOSS_BADAIR= conf::HEALTHLOSS_BADAIR;
-  HEALTHLOSS_NOOXYGEN= conf::HEALTHLOSS_NOOXYGEN;
-  HEALTHLOSS_ASSEX= conf::HEALTHLOSS_ASSEX;
-  HEALTHLOSS_JAWSNAP= conf::HEALTHLOSS_JAWSNAP;
+  HEALTHLOSS_WHEELS    = conf::HEALTHLOSS_WHEELS;
+  HEALTHLOSS_BOOSTMULT = conf::HEALTHLOSS_BOOSTMULT;
+  HEALTHLOSS_BADTEMP   = conf::HEALTHLOSS_BADTEMP;
+  HEALTHLOSS_AGING     = conf::HEALTHLOSS_AGING;
+  HEALTHLOSS_BRAINUSE  = conf::HEALTHLOSS_BRAINUSE;
+  HEALTHLOSS_BUMP      = conf::HEALTHLOSS_BUMP;
+  HEALTHLOSS_SPIKE_EXT = conf::HEALTHLOSS_SPIKE_EXT;
+  HEALTHLOSS_BADAIR    = conf::HEALTHLOSS_BADAIR;
+  HEALTHLOSS_NOOXYGEN  = conf::HEALTHLOSS_NOOXYGEN;
+  HEALTHLOSS_ASSEX     = conf::HEALTHLOSS_ASSEX;
+  HEALTHLOSS_JAWSNAP   = conf::HEALTHLOSS_JAWSNAP;
 
-  STOMACH_EFF= conf::STOMACH_EFF;
+  STOMACH_EFF = conf::STOMACH_EFF;
 
-  FOODINTAKE= conf::FOODINTAKE;
-  FOODDECAY= conf::FOODDECAY;
-  FOODGROWTH= conf::FOODGROWTH;
-  FOODWASTE= conf::FOODWASTE;
-  FOODADDFREQ= conf::FOODADDFREQ;
-  FOODSPREAD= conf::FOODSPREAD;
-  FOODRANGE= conf::FOODRANGE;
+  FOODINTAKE  = conf::FOODINTAKE;
+  FOODDECAY   = conf::FOODDECAY;
+  FOODGROWTH  = conf::FOODGROWTH;
+  FOODWASTE   = conf::FOODWASTE;
+  FOODADDFREQ = conf::FOODADDFREQ;
+  FOODSPREAD  = conf::FOODSPREAD;
+  FOODRANGE   = conf::FOODRANGE;
 
-  FRUITINTAKE= conf::FRUITINTAKE;
-  FRUITDECAY= conf::FRUITDECAY;
-  FRUITWASTE= conf::FRUITWASTE;
-  FRUITADDFREQ= conf::FRUITADDFREQ;
-  FRUITREQUIRE= conf::FRUITREQUIRE;
+  FRUITINTAKE  = conf::FRUITINTAKE;
+  FRUITDECAY   = conf::FRUITDECAY;
+  FRUITWASTE   = conf::FRUITWASTE;
+  FRUITADDFREQ = conf::FRUITADDFREQ;
+  FRUITREQUIRE = conf::FRUITREQUIRE;
 
-  MEATINTAKE= conf::MEATINTAKE;
-  MEATDECAY= conf::MEATDECAY;
-  MEATWASTE= conf::MEATWASTE;
-  MEATVALUE= conf::MEATVALUE;
+  MEATINTAKE = conf::MEATINTAKE;
+  MEATDECAY  = conf::MEATDECAY;
+  MEATWASTE  = conf::MEATWASTE;
+  MEATVALUE  = conf::MEATVALUE;
 
-  HAZARDFREQ= conf::HAZARDFREQ;
-  HAZARDDECAY= conf::HAZARDDECAY;
-  HAZARDDEPOSIT= conf::HAZARDDEPOSIT;
-  HAZARDDAMAGE= conf::HAZARDDAMAGE;
+  HAZARDFREQ    = conf::HAZARDFREQ;
+  HAZARDDECAY   = conf::HAZARDDECAY;
+  HAZARDDEPOSIT = conf::HAZARDDEPOSIT;
+  HAZARDDAMAGE  = conf::HAZARDDAMAGE;
 
   reset();
   spawn();
@@ -1051,9 +1051,9 @@ void Evolve::World::setInputs() {
         for (int q = 0; q < NUMEARS; q++) {
           Vector2f v(a->radius, 0);
           v.rotate(a->angle + a->eardir[q]);
-          Vector2f earpos = a->pos + v;
-          float eardist = (earpos - a2->pos).length();
-          for (int n = 0; n < 2; n++) {
+          Vector2f earpos  = a->pos + v;
+          float    eardist = (earpos - a2->pos).length();
+          for (int n       = 0; n < 2; n++) {
             float otone = 0, ovolume = 0;
             if (n == 0) {
               otone   = a2->tone;
@@ -1082,7 +1082,7 @@ void Evolve::World::setInputs() {
           }
         }
 
-        float ang = (a2->pos - a->pos).get_angle();
+        float ang       = (a2->pos - a->pos).get_angle();
 
         if (light != 0 || MOONLIT) {
           for (int q = 0; q < NUMEYES; q++) {
@@ -1121,8 +1121,9 @@ void Evolve::World::setInputs() {
       }
     }
 
-    float temp = (float) 2.0 * abs(a->pos.y / conf::HEIGHT - 0.5);
-    for (int i = 0; i < NUMEYES; i++) {
+    float    temp              =
+                     (float) 2.0 * abs(a->pos.y / conf::HEIGHT - 0.5);
+    for (int i                 = 0; i < NUMEYES; i++) {
       a->in[Input::EYES + i * 3]     = cap(r[i]);
       a->in[Input::EYES + 1 + i * 3] = cap(g[i]);
       a->in[Input::EYES + 2 + i * 3] = cap(b[i]);
@@ -1205,12 +1206,12 @@ void Evolve::World::processOutputs() {
       a->writeIfKilled("Killed by Spike Raising");
     } else if (a->spikeLength > g)
       a->spikeLength = g;
-    a->grabbing = a->out[Output::GRAB];
+    a->grabbing      = a->out[Output::GRAB];
     if (GRAVITYACCEL > 0) {
       float height = (a->out[Output::JUMP] - 0.5) * 2;
       if (a->jump == 0 && height > 0 && a->age > 0) a->jump = height;
     }
-    float newjaw = cap(a->out[Output::JAW] - a->jawOldPos);
+    float newjaw     = cap(a->out[Output::JAW] - a->jawOldPos);
     if (a->jawPosition > 0) {
       a->jawPosition *= -1;
       a->jawrend = 15;
@@ -1229,7 +1230,7 @@ void Evolve::World::processOutputs() {
 
     a->jump -= GRAVITYACCEL;
     if (a->jump < -1)
-       a->jump = 0;
+      a->jump = 0;
 
     Vector2f v1(sqrt(a->radius / MEANRADIUS) * 5, 0);
     v1.rotate(a->angle + M_PI / 2);
@@ -1245,7 +1246,7 @@ void Evolve::World::processOutputs() {
     Vector2f vv2 = -v1;
     vv1.rotate(-BW1);
     vv2.rotate(BW2);
-    a->pos = a->pos + (vv1 - v1) + (vv2 + v1);
+    a->pos     = a->pos + (vv1 - v1) + (vv2 + v1);
 
     if (a->jump <= 0) {
       a->angle += BW2 - BW1;
@@ -1253,7 +1254,7 @@ void Evolve::World::processOutputs() {
     if (a->angle < -M_PI)
       a->angle = M_PI - (-M_PI - a->angle);
     if (a->angle > M_PI)
-      a->angle  = -M_PI + (a->angle - M_PI);
+      a->angle = -M_PI + (a->angle - M_PI);
 
     a->borderRectify();
   }
@@ -1435,8 +1436,10 @@ void Evolve::World::processInteractions() {
               a->freshkill  = FRESHKILLTIME;
               a2->freshkill = FRESHKILLTIME;
             }
-            float ff1 = capm(ov / d * a2->radius / a->radius * REACTPOWER, 0, 2);
-            float ff2 = capm(ov / d * a->radius / a2->radius * REACTPOWER, 0, 2);
+            float ff1 = capm(ov / d * a2->radius / a->radius * REACTPOWER, 0,
+                             2);
+            float ff2 = capm(ov / d * a->radius / a2->radius * REACTPOWER, 0,
+                             2);
             a->pos.x -= (a2->pos.x - a->pos.x) * ff1;
             a->pos.y -= (a2->pos.y - a->pos.y) * ff1;
             a2->pos.x += (a2->pos.x - a->pos.x) * ff2;
@@ -1748,11 +1751,10 @@ void Evolve::World::draw(IView *view, int layer) {
         } else if (layer == Layer::LIGHT + 1) {
           //light
           val = cells[Layer::LIGHT][x][y];
+        } else if (layer == Layer::TEMPLAYER) {
+          //temperature
+          val = cells[Layer::TEMPLAYER][x][y];
         }
-/*				} else if (layer==TEMPLAYER) {
-					//temperature
-					val = cells[TEMPLAYER][x][y];
-				}*/
 
         view->drawCell(x, y, val);
       }

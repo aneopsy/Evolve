@@ -8,23 +8,6 @@
 #define SETTINGS_H
 
 
-//defines for layer code. Changing order here changes cycle order and menu-listing order
-namespace Layer {
-    enum {
-        //NOTE that GLVeiw's use of these must be incremented by 1 because 0 is used for disable draw
-                LAND = 0,
-                PLANTS,
-                FRUITS,
-                MEATS,
-                HAZARDS,
-                TEMP,
-                LIGHT,
-
-        //Don't add beyond this entry!
-                LAYERS
-    };
-};
-
 //defines for agent visualization. Changing order here changes cycle order and menu-listing order
 namespace Visual {
     enum {

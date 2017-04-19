@@ -67,8 +67,8 @@ public:
     virtual void drawStatic();
 
     virtual void trySaveWorld(bool autosave = false);
-//    virtual void trySaveUnit(){};
-//    virtual void tryLoadUnit(){};
+    virtual void trySaveUnit();
+    virtual void tryLoadUnit();
 
     void setWorld(Evolve::World *w);
 

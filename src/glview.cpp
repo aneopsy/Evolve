@@ -184,25 +184,26 @@ void GLView::menu(int key) {
     return;
   if (key == 27) //[esc] quit
     exit(0);
-  else if (key == 'p') {
-    //pause
+  else if (key == 'p') { //Pause
     _live.paused = !_live.paused;
-  } else if (key == 'm') { //drawing
+  } else if (key == 'l') { //Drawing
     _live.fastmode = !_live.fastmode;
   } else if (key == 43) { //+
     _live.skipdraw++;
   } else if (key == 45) { //-
     _live.skipdraw--;
-  } else if (key == 'l' ||
-             key == 'k') { //layer switch; l= "next", k= "previous"
-    if (key == 'l') _live.layersvis++;
+  } else if (key == 'k' || key == 'm') { //layer switch
+    if (key == 'm') _live.layersvis++;
     else _live.layersvis--;
-    if (_live.layersvis > Layer::LAYERS) _live.layersvis = 0;
-    if (_live.layersvis < 0) _live.layersvis             = Layer::LAYERS;
-  } else if (key == 'z' || key ==
-                           'x') { //change unit visual scheme; x= "next", z= "previous"
-    if (key == 'x') _live.unitsvis++;
-    else _live.unitsvis--;
+    if (_live.layersvis > Evolve::Layer::LAYERS)
+      _live.layersvis = 0;
+    if (_live.layersvis < 0)
+      _live.layersvis = Evolve::Layer::LAYERS;
+  } else if (key == 'a' || key == 'e') { //cell switch
+    if (key == 'e')
+      _live.unitsvis++;
+    else
+      _live.unitsvis--;
     if (_live.unitsvis > Visual::VISUALS - 1) _live.unitsvis = Visual::NONE;
     if (_live.unitsvis < Visual::NONE)
       _live.unitsvis =
@@ -218,10 +219,10 @@ void GLView::menu(int key) {
   } else if (key == 'c') {
     _world->setClosed(!_world->isClosed());
     _live.worldclosed = (int) _world->isClosed();
-/*		glutGet(GLUT_MENU_NUM_ITEMS);
-		if (_world->isClosed()) glutChangeToMenuEntry(4, "Open World", 'c');
-		else glutChangeToMenuEntry(4, "Close World", 'c');
-		glutSetMenu(m_id);*/
+    glutGet(GLUT_MENU_NUM_ITEMS);
+    if (_world->isClosed()) glutChangeToMenuEntry(4, "Open World", 'c');
+    else glutChangeToMenuEntry(4, "Close World", 'c');
+    glutSetMenu(m_id);
   } else if (key == 'f') {
     _live.follow = !_live.follow; //toggle follow selected unit
   } else if (key == 'o') {
@@ -305,12 +306,12 @@ void GLView::menu(int key) {
   } else if (key == 1005) { //menu only, debug mode
     _world->setDebug(!_world->isDebug());
     _live.debug = (int) _world->isDebug();
-/*		glutGet(GLUT_MENU_NUM_ITEMS);
-		if (_world->isDebug()){
-			glutChangeToMenuEntry(18, "Exit Debug Mode", 1005);
-			printf("Entered Debug Mode\n");
-		} else glutChangeToMenuEntry(18, "Enter Debug Mode", 1005);
-		glutSetMenu(m_id);*/
+    glutGet(GLUT_MENU_NUM_ITEMS);
+    if (_world->isDebug()) {
+      glutChangeToMenuEntry(18, "Exit Debug Mode", 1005);
+      printf("Entered Debug Mode\n");
+    } else glutChangeToMenuEntry(18, "Enter Debug Mode", 1005);
+    glutSetMenu(m_id);
   } else if (key == 1006) { //force-reset config
     _world->writeConfig();
   } else if (key == 1007) { // reset
@@ -326,15 +327,13 @@ void GLView::menu(int key) {
   } else if (_world->isDebug()) {
     printf("Unknown key pressed: %i\n", key);
   }
-  //other keys: '1':49, '2':50, ..., '0':48
 }
 
 void GLView::menuS(int key) {}
 
 void GLView::glCreateMenu() {
-  m_id = glutCreateMenu(gl_menu); //right-click context menu
-  glutAddMenuEntry("Control Selected (w,a,s,d)",
-                   999); //line contains mode-specific text, see menu function above
+  m_id = glutCreateMenu(gl_menu);
+  glutAddMenuEntry("Control Selected (w,a,s,d)", 999);
   glutAddMenuEntry("Heal Unit (/)", '/');
   glutAddMenuEntry("Reproduce Unit (|)", '|');
   glutAddMenuEntry("Mutate Unit (~)", '~');
@@ -357,14 +356,12 @@ void GLView::glCreateMenu() {
 }
 
 void GLView::gluiCreateMenu() {
-//GLUI menu. Slimy, yet satisfying.
-  //must set our init live vars to something. Might as well do it here
   _live.worldclosed = 0;
   _live.paused      = 0;
   _live.fastmode    = 0;
   _live.skipdraw    = 1;
   _live.unitsvis    = Visual::RGB;
-  _live.layersvis   = Layer::LAND + 1; //+1 because "off" is not a real layer
+  _live.layersvis   = Evolve::Layer::LAND + 1;
   _live.profilevis  = Profile::INOUT;
   _live.selection   = Select::MANUAL;
   _live.follow      = 0;
@@ -372,14 +369,12 @@ void GLView::gluiCreateMenu() {
   _live.debug       = 0;
   _live.grid        = 0;
 
-  //create GLUI and add the options, be sure to connect them all to their real vals later
   _menu = GLUI_Master.create_glui("Menu", 0, 1, 1);
   _menu->add_checkbox("Closed world", &_live.worldclosed);
   _menu->add_checkbox("Pause", &_live.paused);
   _menu->add_checkbox("Allow Autosaves", &_live.autosave);
 
-  new GLUI_Button(_menu, "Load World", 1,
-                  glui_handleRW); //change 1->5 for advanced loading window (needs work)
+  new GLUI_Button(_menu, "Load World", 1, glui_handleRW);
   new GLUI_Button(_menu, "Save World", 2, glui_handleRW);
   new GLUI_Button(_menu, "New World", 3, glui_handleRW);
 
@@ -394,34 +389,18 @@ void GLView::gluiCreateMenu() {
                                                       &_live.layersvis);
   new GLUI_StaticText(rollout_vis, "Layer");
   new GLUI_RadioButton(group_layers, "off");
-  for (int i = 0; i < Layer::LAYERS; i++) {
-    //this code allows the layers to be defined in any order
+  for (int i = 0; i < Evolve::Layer::LAYERS; i++) {
     char text[16] = "";
-    if (i == Layer::PLANTS) strcpy(text, "Plant");
-    else if (i == Layer::MEATS) strcpy(text, "Meat");
-    else if (i == Layer::HAZARDS) strcpy(text, "Hazard");
-    else if (i == Layer::FRUITS) strcpy(text, "Fruit");
-    else if (i == Layer::LAND) strcpy(text, "Map");
-    else if (i == Layer::LIGHT) strcpy(text, "Light");
-    else if (i == Layer::TEMP) strcpy(text, "Temp");
+    if (i == Evolve::Layer::PLANTS) strcpy(text, "Plant");
+    else if (i == Evolve::Layer::MEATS) strcpy(text, "Meat");
+    else if (i == Evolve::Layer::HAZARDS) strcpy(text, "Hazard");
+    else if (i == Evolve::Layer::FRUITS) strcpy(text, "Fruit");
+    else if (i == Evolve::Layer::LAND) strcpy(text, "Map");
+    else if (i == Evolve::Layer::LIGHT) strcpy(text, "Light");
+    else if (i == Evolve::Layer::TEMP) strcpy(text, "Temp");
 
     new GLUI_RadioButton(group_layers, text);
   }
-
-  new GLUI_Separator(rollout_vis);
-  GLUI_RadioGroup *group_profiles = new GLUI_RadioGroup(rollout_vis,
-                                                        &_live.profilevis);
-//  new GLUI_StaticText(rollout_vis, "Selected");
-//  for (int i = 0; i < Profile::PROFILES; i++) {
-//    char text[16] = "";
-//    if (i == Profile::NONE) strcpy(text, "off");
-//    else if (i == Profile::BRAIN) strcpy(text, "Brain");
-//    else if (i == Profile::EYES) strcpy(text, "Eyesight");
-//    else if (i == Profile::INOUT) strcpy(text, "In's/Out's");
-//    else if (i == Profile::SOUND) strcpy(text, "Sounds");
-//
-//    new GLUI_RadioButton(group_profiles, text);
-//  }
 
   _menu->add_column_to_panel(rollout_vis, true);
   GLUI_RadioGroup *group_units = new GLUI_RadioGroup(rollout_vis,
@@ -469,7 +448,6 @@ void GLView::gluiCreateMenu() {
 
   _menu->add_checkbox("DEBUG", &_live.debug);
 
-  //set to main graphics window
   _menu->set_main_gfx_window(mainWin);
 }
 
@@ -479,8 +457,9 @@ void GLView::handleCloses(int action) { (void) action; }
 
 void GLView::trySaveWorld(bool autosave) {}
 
-//void GLView::trySaveUnit(){}
-//void GLView::tryLoadUnit() {}
+void GLView::trySaveUnit() {}
+
+void GLView::tryLoadUnit() {}
 
 void GLView::countdownEvents() {
   int count = _world->events.size();
@@ -556,19 +535,16 @@ void GLView::renderScene() {
                0.0f);
   glScalef(_scalemult, _scalemult, 1.0f);
 
-  //handle world unit selection interface
   _world->setSelection(_live.selection);
   if (_world->getSelection() == -1 && _live.selection != Select::MANUAL &&
       _modcounter % 5 == 0)
     _live.selection = Select::NONE;
 
-  if (_live.follow == 1) { //if we're following,
+  if (_live.follow == 1) {
     float xi = 0, yi = 0;
-    _world->getFollowLocation(xi,
-                              yi); //get the follow location from the world (location of selected unit)
+    _world->getFollowLocation(xi, yi);
 
     if (xi != 0 && yi != 0) {
-      // if we got to move the screen completly accross the world, jump instead
       if (abs(-xi - _translate.x) > 0.95 * conf::WIDTH ||
           abs(-yi - _translate.y) > 0.95 * conf::HEIGHT) {
         _translate.x = -xi;
@@ -581,11 +557,8 @@ void GLView::renderScene() {
       }
     }
   }
-
   glTranslatef(_translate.x, _translate.y, 0.0f);
-
   _world->draw(this, _live.layersvis);
-
   glPopMatrix();
   glutSwapBuffers();
   countdownEvents();
@@ -609,9 +582,7 @@ void GLView::renderProfile() {
   glLoadIdentity();
 
   if (_world->getSelectedUnit() >= 0) {
-    //get unit
     Evolve::Unit selected = _world->units[_world->getSelectedUnit()];
-    //slightly transparent background
     glBegin(GL_QUADS);
     glColor4f(0.23, 0.25, 0.3, 1);
     glVertex3f(10, 10, 0);
@@ -633,7 +604,6 @@ void GLView::renderProfile() {
     glVertex3f(ww - 10, 150, 0);
     glVertex3f(ww - 10, 10, 0);
 
-    //slightly transparent background
     glBegin(GL_QUADS);
     glColor4f(0.23, 0.25, 0.3, 1);
     glVertex3f(10, 155, 0);
@@ -641,7 +611,6 @@ void GLView::renderProfile() {
     glVertex3f(ww - 10, 240, 0);
     glVertex3f(ww - 10, 155, 0);
 
-    //slightly transparent background
     glBegin(GL_QUADS);
     glColor4f(1, 0.5, 0.5, 1);
     glVertex3f(10, 245, 0);
@@ -649,8 +618,6 @@ void GLView::renderProfile() {
     glVertex3f(ww - 10, wh - 10, 0);
     glVertex3f(ww - 10, 245, 0);
 
-    //stomach bar
-//    glColor4f(0.15,0.17,0.2,0.7);
     glColor4f(0.10, 0.113, 0.137, 1);
     glVertex3f(175, 95, 0);
     glVertex3f(175, 145, 0);
@@ -675,7 +642,6 @@ void GLView::renderProfile() {
     glVertex3f(selected.stomach[Stomach::MEAT] * 360 + (175), 144, 0);
     glVertex3f(selected.stomach[Stomach::MEAT] * 360 + (175), 128, 0);
 
-    //repcounter bar
     glColor4f(0.10, 0.113, 0.137, 1);
     glVertex3f(175, 55, 0);
     glVertex3f(175, 90, 0);
@@ -687,7 +653,6 @@ void GLView::renderProfile() {
     glVertex3f(cap(selected.repcounter / _world->REPRATE) * 360 + (175), 89, 0);
     glVertex3f(cap(selected.repcounter / _world->REPRATE) * 360 + (175), 56, 0);
 
-    //health bar
     glColor4f(0.10, 0.113, 0.137, 1);
     glVertex3f(175, 15, 0);
     glVertex3f(175, 50, 0);
@@ -700,11 +665,9 @@ void GLView::renderProfile() {
     glVertex3f(selected.health / 2.0 * 360 + (175), 16, 0);
     glEnd();
 
-    //draw Ghost Unit
     drawUnit(selected, 90, 90, true);
 
-    //write text and values
-    //Unit ID
+    //Id
     sprintf(_buf, "ID: %d", selected.id);
     RenderString(90 - (strlen(_buf) * 2),
                  25, GLUT_BITMAP_HELVETICA_12,
@@ -716,18 +679,18 @@ void GLView::renderProfile() {
                  35, GLUT_BITMAP_HELVETICA_12,
                  _buf, 0.8f, 1.0f, 1.0f);
 
-    //Repcounter
+    //Child
     sprintf(_buf, "Child: %.2f/%.0f", selected.repcounter, _world->REPRATE);
     RenderString(((ww - 15) + 175) / 2 - (strlen(_buf) * 2),
                  75, GLUT_BITMAP_HELVETICA_12,
                  _buf, 0.8f, 1.0f, 1.0f);
-
-    //Stomach
-//		sprintf(_buf, "H%.1f F%.1f C%.1f", selected.stomach[Stomach::PLANT], selected.stomach[Stomach::FRUIT],
-//			selected.stomach[Stomach::MEAT]);
-//		RenderString(ww-100,
-//					 25, GLUT_BITMAP_HELVETICA_12,
-//					 _buf, 0.8f, 1.0f, 1.0f);
+    //Stomac
+    sprintf(_buf, "H%.1f F%.1f C%.1f", selected.stomach[Stomach::PLANT],
+            selected.stomach[Stomach::FRUIT],
+            selected.stomach[Stomach::MEAT]);
+    RenderString(ww - 100,
+                 25, GLUT_BITMAP_HELVETICA_12,
+                 _buf, 0.8f, 1.0f, 1.0f);
 
     if (selected.isHerbivore()) sprintf(_buf, "Herbivore");
     else if (selected.isFrugivore()) sprintf(_buf, "Frugivore");
@@ -737,7 +700,7 @@ void GLView::renderProfile() {
                  125, GLUT_BITMAP_HELVETICA_12,
                  _buf, 0.8f, 1.0f, 1.0f);
 
-    //age
+    //Age
     sprintf(_buf, "Age: %d", selected.age);
     RenderString(15,
                  170, GLUT_BITMAP_HELVETICA_12,
@@ -1067,23 +1030,24 @@ void GLView::renderProfile() {
       glColor3f(selected.in[Input::EYES + q * 3],
                 selected.in[Input::EYES + 1 + q * 3],
                 selected.in[Input::EYES + 2 + q * 3]);
-      Forms::drawCircle(Vector2d(75 + selected.eyedir[q] / 2 / M_PI * 445, wh-140),
-                        selected.eyefov[q] / M_PI * 30);
+      Forms::drawCircle(
+              Vector2d(75 + selected.eyedir[q] / 2 / M_PI * 445, wh - 140),
+              selected.eyefov[q] / M_PI * 30);
       glEnd();
     }
 
     glBegin(GL_LINES);
     glColor3f(1, 1, 1);
-    glVertex3f(75, wh-140, 0);
-    glVertex3f(ww-30, wh-140, 0);
-    glVertex3f(50+(ww-15-50)/2, wh-100, 0);
-    glVertex3f(50+(ww-15-50)/2, wh-180, 0);
+    glVertex3f(75, wh - 140, 0);
+    glVertex3f(ww - 30, wh - 140, 0);
+    glVertex3f(50 + (ww - 15 - 50) / 2, wh - 100, 0);
+    glVertex3f(50 + (ww - 15 - 50) / 2, wh - 180, 0);
 
-    glVertex3f(75, wh-100, 0);
-    glVertex3f(75, wh-180, 0);
+    glVertex3f(75, wh - 100, 0);
+    glVertex3f(75, wh - 180, 0);
 
-    glVertex3f(ww-30, wh-100, 0);
-    glVertex3f(ww-30, wh-180, 0);
+    glVertex3f(ww - 30, wh - 100, 0);
+    glVertex3f(ww - 30, wh - 180, 0);
 
     glEnd();
   }
@@ -1363,42 +1327,45 @@ void GLView::drawUnit(const Evolve::Unit &unit, float x, float y, bool ghost) {
         }
       }
 
-      if(_world->isDebug()){
-          glEnd();
-          glBegin(GL_LINES);
-          float offx=0;
-          int ss=30;
-          int yy = ss;
-          int xx=ss;
-          for (int j=0;j<conf::BRAINSIZE;j++) {
-              for(int k=0;k<CONNS;k++){
-                  int j2= unit.brain._neurons[j].id[k];
-                  
-                  //project indices j and j2 into pixel space
-                  float x1= 0;
-                  float y1= 0;
-                  if(j<Input::INPUT_SIZE) { x1= j*ss; y1= yy; }
-                  else { 
-                      x1= ((j-Input::INPUT_SIZE)%30)*ss;
-                      y1= yy+ss+2*ss*((int) (j-Input::INPUT_SIZE)/30);
-                  }
-                  
-                  float x2= 0;
-                  float y2= 0;
-                  if(j2<Input::INPUT_SIZE) { x2= j2*ss; y2= yy; }
-                  else { 
-                      x2= ((j2-Input::INPUT_SIZE)%30)*ss;
-                      y2= yy+ss+2*ss*((int) (j2-Input::INPUT_SIZE)/30);
-                  }
-                  
-                  float ww= unit.brain._neurons[j].w[k];
-                  if(ww<0) glColor3f(-ww, 0, 0);
-                  else glColor3f(0,0,ww);
-                  
-                  glVertex3f(x1,y1,0);
-                  glVertex3f(x2,y2,0);
-              }
+      if (_world->isDebug()) {
+        glEnd();
+        glBegin(GL_LINES);
+        float    offx = 0;
+        int      ss   = 30;
+        int      yy   = ss;
+        int      xx   = ss;
+        for (int j    = 0; j < conf::BRAINSIZE; j++) {
+          for (int k = 0; k < CONNS; k++) {
+            int j2 = unit.brain._neurons[j].id[k];
+
+            float x1 = 0;
+            float y1 = 0;
+            if (j < Input::INPUT_SIZE) {
+              x1 = j * ss;
+              y1 = yy;
+            } else {
+              x1 = ((j - Input::INPUT_SIZE) % 30) * ss;
+              y1 = yy + ss + 2 * ss * ((int) (j - Input::INPUT_SIZE) / 30);
+            }
+
+            float x2 = 0;
+            float y2 = 0;
+            if (j2 < Input::INPUT_SIZE) {
+              x2 = j2 * ss;
+              y2 = yy;
+            } else {
+              x2 = ((j2 - Input::INPUT_SIZE) % 30) * ss;
+              y2 = yy + ss + 2 * ss * ((int) (j2 - Input::INPUT_SIZE) / 30);
+            }
+
+            float ww = unit.brain._neurons[j].w[k];
+            if (ww < 0) glColor3f(-ww, 0, 0);
+            else glColor3f(0, 0, ww);
+
+            glVertex3f(x1, y1, 0);
+            glVertex3f(x2, y2, 0);
           }
+        }
       }
     }
 
@@ -1893,29 +1860,31 @@ void GLView::drawCell(int x, int y, float quantity) {
   if (_live.layersvis != 0) { //0: white
     glBegin(GL_QUADS);
     if (_live.layersvis ==
-        Layer::PLANTS + 1) { //plant food: green w/ navy blue background
+        Evolve::Layer::PLANTS + 1) { //plant food: green w/ navy blue background
       glColor4f(0.0, quantity, 0.1, 1);
     } else if (_live.layersvis ==
-               Layer::MEATS + 1) { //meat food: red/burgundy w/ navy blue bg
+               Evolve::Layer::MEATS +
+               1) { //meat food: red/burgundy w/ navy blue bg
       glColor4f(quantity, 0.0, 0.1, 1);
     } else if (_live.layersvis ==
-               Layer::HAZARDS + 1) { //hazards: purple/munita w/ navy blue bg
+               Evolve::Layer::HAZARDS +
+               1) { //hazards: purple/munita w/ navy blue bg
       glColor4f(quantity, 0.0, quantity * 0.9 + 0.1, 1);
     } else if (_live.layersvis ==
-               Layer::FRUITS + 1) { //fruit: yellow w/ navy blue bg
+               Evolve::Layer::FRUITS + 1) { //fruit: yellow w/ navy blue bg
       glColor4f(quantity * 0.8, quantity * 0.8, 0.1, 1);
-    } else if (_live.layersvis == Layer::LAND +
+    } else if (_live.layersvis == Evolve::Layer::LAND +
                                   1) { //land: green if 1, blue if 0, navy blue otherwise (debug)
       if (quantity == 1) glColor4f(0.3, 0.7, 0.3, 1);
       else if (quantity == 0) glColor4f(0.3, 0.3, 0.9, 1);
       else glColor4f(0, 0, 0.1, 1);
     } else if (_live.layersvis ==
-               Layer::LIGHT + 1) {
+               Evolve::Layer::LIGHT + 1) {
       if (_world->MOONLIT)
         glColor4f(0.5 * quantity + 0.5, 0.5 * quantity + 0.5,
                   quantity * 0.3 + 0.5, 1);
       else glColor4f(quantity, quantity, quantity * 0.7 + 0.1, 1);
-    } else if (_live.layersvis == Layer::TEMP +
+    } else if (_live.layersvis == Evolve::Layer::TEMP +
                                   1) { //temp: yellow near the equator, blue at the poles
       float col = cap(
               2 * abs((float) y * conf::CZ / conf::HEIGHT - 0.5) - 0.02);
