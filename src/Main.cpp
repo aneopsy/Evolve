@@ -32,14 +32,14 @@ int main(int argc, char **argv) {
 
   glutInit(&argc, argv);
 
-  glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
-  glutInitWindowPosition(conf::WIDTH - 300, 0);
-  glutInitWindowSize(300, conf::WHEIGHT);
+  glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
+  glutInitWindowPosition(conf::WIDTH - 550, 0);
+  glutInitWindowSize(550, conf::WHEIGHT+100);
   GLVIEW->profileWin = glutCreateWindow("Profile");
 
   glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
-  glutInitWindowPosition(0, conf::HEIGHT - 250);
-  glutInitWindowSize(conf::WIDTH, 250);
+  glutInitWindowPosition(0, conf::HEIGHT - 150);
+  glutInitWindowSize(conf::WIDTH, 150);
   GLVIEW->statsWin = glutCreateWindow("Stats");
 
   glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);

@@ -73,15 +73,15 @@ RenderString(float x, float y, void *font, const char *string, float r, float g,
     glutBitmapCharacter(font, string[i]);
 }
 
-GLView::GLView(Evolve::World *s) :
-        _world(s),
+GLView::GLView(Evolve::World *w) :
+        _world(w),
         _modcounter(0),
         _frames(0),
         _lastUpdate(0),
         _mousedrag(false) {
 
   _translate = Vector2f();
-  _scalemult  = 0.02;
+  _scalemult = 0.02;
   _downb[0] = 0;
   _downb[1] = 0;
   _downb[2] = 0;
@@ -90,7 +90,6 @@ GLView::GLView(Evolve::World *s) :
   _downb[5] = 0;
   _downb[6] = 0;
   _mouse = Vector2d();
-  _live.debug = true;
 }
 
 GLView::~GLView() {}
@@ -109,27 +108,27 @@ void GLView::processMouse(int button, int state, int x, int y) {
            button, state, x, y, _scalemult, _mousedrag);
 
   if (!_mousedrag && state == 1) {
-      int wx = (int) ((x - glutGet(GLUT_WINDOW_WIDTH) / 2) / _scalemult -
-                      _translate.x);
-      int wy = (int) ((y - glutGet(GLUT_WINDOW_HEIGHT) / 2) / _scalemult -
-                      _translate.y);
+    int wx = (int) ((x - glutGet(GLUT_WINDOW_WIDTH) / 2) / _scalemult -
+                    _translate.x);
+    int wy = (int) ((y - glutGet(GLUT_WINDOW_HEIGHT) / 2) / _scalemult -
+                    _translate.y);
 
-      if (_world->processMouse(button, state, wx, wy, _scalemult) &&
-          _live.selection != Select::RELATIVE)
-        _live.selection = Select::MANUAL;
+    if (_world->processMouse(button, state, wx, wy, _scalemult) &&
+        _live.selection != Select::RELATIVE)
+      _live.selection = Select::MANUAL;
   }
 
   if (button == 3 || button == 4) {
     if (button == 3)
-      _scalemult += 10 * conf::ZOOM_SPEED/10;
+      _scalemult += 10 * conf::ZOOM_SPEED / 10;
     else
-      _scalemult -= 10 * conf::ZOOM_SPEED/10;
+      _scalemult -= 10 * conf::ZOOM_SPEED / 10;
     if (_scalemult < 0.01) _scalemult = 0.01;
 
   }
 
-  _mouse.x    = x;
-  _mouse.y    = y;
+  _mouse.x = x;
+  _mouse.y = y;
   _mousedrag = false;
   _downb[button] = 1 - state;
 }
@@ -153,8 +152,8 @@ void GLView::processMouseActiveMotion(int x, int y) {
   }
   if (abs(_mouse.x - x) > 4 || abs(_mouse.y - y) > 4)
     _mousedrag = true;
-  _mouse.x      = x;
-  _mouse.y      = y;
+  _mouse.x = x;
+  _mouse.y = y;
 }
 
 void GLView::processMousePassiveMotion(int x, int y) {
@@ -181,6 +180,8 @@ void GLView::processReleasedKeys(unsigned char key, int x, int y) {
 
 void GLView::menu(int key) {
 //  ReadWrite* savehelper= new ReadWrite(); //for loading/saving
+  if (!key)
+    return;
   if (key == 27) //[esc] quit
     exit(0);
   else if (key == 'p') {
@@ -204,7 +205,7 @@ void GLView::menu(int key) {
     else _live.unitsvis--;
     if (_live.unitsvis > Visual::VISUALS - 1) _live.unitsvis = Visual::NONE;
     if (_live.unitsvis < Visual::NONE)
-      _live.unitsvis                                        =
+      _live.unitsvis =
               Visual::VISUALS - 1;
   } else if (key == 1001) { //add units
     _world->addUnits(5);
@@ -233,9 +234,9 @@ void GLView::menu(int key) {
     float scaleB = (float) glutGet(GLUT_WINDOW_HEIGHT) / (conf::HEIGHT + 150);
     if (scaleA > scaleB) _scalemult = scaleB;
     else _scalemult = scaleA;
-    _translate.x     = -(conf::WIDTH - 2020) / 2;
-    _translate.y     = -(conf::HEIGHT - 80) / 2;
-    _live.follow    = 0;
+    _translate.x = -(conf::WIDTH - 2020) / 2;
+    _translate.y = -(conf::HEIGHT - 80) / 2;
+    _live.follow = 0;
   } else if (key == 'g') {
     if (_live.selection != Select::BEST_GEN)
       _live.selection = Select::BEST_GEN; //select most advanced generation unit
@@ -290,7 +291,8 @@ void GLView::menu(int key) {
   } else if (key == 100) { //d (turn right)
     _world->pcontrol = true;
     _world->pleft    = capm(
-            _world->pleft + 0.05 + (_world->pright - _world->pleft) * 0.05, -1, 1);
+            _world->pleft + 0.05 + (_world->pright - _world->pleft) * 0.05, -1,
+            1);
     _world->pright   = capm(
             _world->pright - 0.05 + (_world->pleft - _world->pright) * 0.05, -1,
             1);
@@ -355,24 +357,119 @@ void GLView::glCreateMenu() {
 }
 
 void GLView::gluiCreateMenu() {
-  _menu = GLUI_Master.create_glui("Settings", 0, 1, 1);
+//GLUI menu. Slimy, yet satisfying.
+  //must set our init live vars to something. Might as well do it here
+  _live.worldclosed = 0;
+  _live.paused      = 0;
+  _live.fastmode    = 0;
+  _live.skipdraw    = 1;
+  _live.unitsvis    = Visual::RGB;
+  _live.layersvis   = Layer::LAND + 1; //+1 because "off" is not a real layer
+  _live.profilevis  = Profile::INOUT;
+  _live.selection   = Select::MANUAL;
+  _live.follow      = 0;
+  _live.autosave    = 0;
+  _live.debug       = 0;
+  _live.grid        = 0;
 
-  GLUI_Panel *panel_world = new GLUI_Panel(_menu, "World Control");
-  new GLUI_Button(panel_world, "Load", 1, glui_handleRW);
-  new GLUI_Button(panel_world, "Save", 2, glui_handleRW);
-  new GLUI_Button(panel_world, "New", 3, glui_handleRW);
+  //create GLUI and add the options, be sure to connect them all to their real vals later
+  _menu = GLUI_Master.create_glui("Menu", 0, 1, 1);
+  _menu->add_checkbox("Closed world", &_live.worldclosed);
+  _menu->add_checkbox("Pause", &_live.paused);
+  _menu->add_checkbox("Allow Autosaves", &_live.autosave);
 
-  GLUI_Panel *panel_unit = new GLUI_Panel(_menu, "Unit Control");
-  new GLUI_Button(panel_unit, "Load", 1, glui_handleRW);
-  new GLUI_Button(panel_unit, "Save", 2, glui_handleRW);
-  new GLUI_Button(panel_unit, "New", 3, glui_handleRW);
+  new GLUI_Button(_menu, "Load World", 1,
+                  glui_handleRW); //change 1->5 for advanced loading window (needs work)
+  new GLUI_Button(_menu, "Save World", 2, glui_handleRW);
+  new GLUI_Button(_menu, "New World", 3, glui_handleRW);
 
   GLUI_Panel *panel_speed = new GLUI_Panel(_menu, "Speed Control");
   _menu->add_checkbox_to_panel(panel_speed, "Fast Mode", &_live.fastmode);
   _menu->add_spinner_to_panel(panel_speed, "Speed", GLUI_SPINNER_INT,
-                             &_live.skipdraw);
+                              &_live.skipdraw);
+
+  GLUI_Rollout *rollout_vis = new GLUI_Rollout(_menu, "Visuals");
+
+  GLUI_RadioGroup *group_layers = new GLUI_RadioGroup(rollout_vis,
+                                                      &_live.layersvis);
+  new GLUI_StaticText(rollout_vis, "Layer");
+  new GLUI_RadioButton(group_layers, "off");
+  for (int i = 0; i < Layer::LAYERS; i++) {
+    //this code allows the layers to be defined in any order
+    char text[16] = "";
+    if (i == Layer::PLANTS) strcpy(text, "Plant");
+    else if (i == Layer::MEATS) strcpy(text, "Meat");
+    else if (i == Layer::HAZARDS) strcpy(text, "Hazard");
+    else if (i == Layer::FRUITS) strcpy(text, "Fruit");
+    else if (i == Layer::LAND) strcpy(text, "Map");
+    else if (i == Layer::LIGHT) strcpy(text, "Light");
+    else if (i == Layer::TEMP) strcpy(text, "Temp");
+
+    new GLUI_RadioButton(group_layers, text);
+  }
+
+  new GLUI_Separator(rollout_vis);
+  GLUI_RadioGroup *group_profiles = new GLUI_RadioGroup(rollout_vis,
+                                                        &_live.profilevis);
+  new GLUI_StaticText(rollout_vis, "Selected");
+  for (int i = 0; i < Profile::PROFILES; i++) {
+    char text[16] = "";
+    if (i == Profile::NONE) strcpy(text, "off");
+    else if (i == Profile::BRAIN) strcpy(text, "Brain");
+    else if (i == Profile::EYES) strcpy(text, "Eyesight");
+    else if (i == Profile::INOUT) strcpy(text, "In's/Out's");
+    else if (i == Profile::SOUND) strcpy(text, "Sounds");
+
+    new GLUI_RadioButton(group_profiles, text);
+  }
+
+  _menu->add_column_to_panel(rollout_vis, true);
+  GLUI_RadioGroup *group_units = new GLUI_RadioGroup(rollout_vis,
+                                                     &_live.unitsvis);
+  new GLUI_StaticText(rollout_vis, "Agents");
+  for (int i = 0; i < Visual::VISUALS; i++) {
+    char text[16] = "";
+    if (i == Visual::NONE) strcpy(text, "off");
+    else if (i == Visual::RGB) strcpy(text, "RGB");
+    else if (i == Visual::STOMACH) strcpy(text, "Stomach");
+    else if (i == Visual::DISCOMFORT) strcpy(text, "Discomfort");
+    else if (i == Visual::VOLUME) strcpy(text, "Volume");
+    else if (i == Visual::SPECIES) strcpy(text, "Species ID");
+    else if (i == Visual::CROSSABLE) strcpy(text, "Crossable");
+    else if (i == Visual::HEALTH) strcpy(text, "Health");
+    else if (i == Visual::METABOLISM) strcpy(text, "Metabolism");
+    else if (i == Visual::LUNGS) strcpy(text, "Land/Water");
+
+
+    new GLUI_RadioButton(group_units, text);
+  }
+  _menu->add_checkbox_to_panel(rollout_vis, "Grid on", &_live.grid);
+
+  GLUI_Rollout    *rollout_xyl  = new GLUI_Rollout(_menu, "Selection");
+  GLUI_RadioGroup *group_select = new GLUI_RadioGroup(rollout_xyl,
+                                                      &_live.selection);
+  for (int        i             = 0; i < Select::SELECT_TYPES; i++) {
+    char text[16] = "";
+    if (i == Select::OLDEST) strcpy(text, "Oldest");
+    else if (i == Select::BEST_GEN) strcpy(text, "Best Gen.");
+    else if (i == Select::HEALTHY) strcpy(text, "Healthiest");
+    else if (i == Select::PRODUCTIVE) strcpy(text, "Productive");
+    else if (i == Select::AGGRESSIVE) strcpy(text, "Aggressive");
+    else if (i == Select::NONE) strcpy(text, "off");
+    else if (i == Select::MANUAL) strcpy(text, "Manual");
+    else if (i == Select::RELATIVE) strcpy(text, "Relative");
+
+    new GLUI_RadioButton(group_select, text);
+    if (i == Select::NONE)
+      _menu->add_checkbox_to_panel(rollout_xyl, "Follow Selected",
+                                   &_live.follow);
+  }
+  new GLUI_Separator(rollout_xyl);
+  _menu->add_button_to_panel(rollout_xyl, "Save Selected", 4, glui_handleRW);
 
   _menu->add_checkbox("DEBUG", &_live.debug);
+
+  //set to main graphics window
   _menu->set_main_gfx_window(mainWin);
 }
 
@@ -455,25 +552,32 @@ void GLView::renderScene() {
   glClearColor(0.129, 0.145, 0.168, 255);
   glPushMatrix();
 
-  glTranslatef(glutGet(GLUT_WINDOW_WIDTH)/2, glutGet(GLUT_WINDOW_HEIGHT)/2, 0.0f);
+  glTranslatef(glutGet(GLUT_WINDOW_WIDTH) / 2, glutGet(GLUT_WINDOW_HEIGHT) / 2,
+               0.0f);
   glScalef(_scalemult, _scalemult, 1.0f);
 
   //handle world unit selection interface
   _world->setSelection(_live.selection);
-  if (_world->getSelection()==-1 && _live.selection!=Select::MANUAL && _modcounter%5==0) _live.selection= Select::NONE;
+  if (_world->getSelection() == -1 && _live.selection != Select::MANUAL &&
+      _modcounter % 5 == 0)
+    _live.selection = Select::NONE;
 
-  if(_live.follow==1){ //if we're following,
-    float xi=0, yi=0;
-    _world->getFollowLocation(xi, yi); //get the follow location from the world (location of selected unit)
+  if (_live.follow == 1) { //if we're following,
+    float xi = 0, yi = 0;
+    _world->getFollowLocation(xi,
+                              yi); //get the follow location from the world (location of selected unit)
 
-    if(xi!=0 && yi!=0){
+    if (xi != 0 && yi != 0) {
       // if we got to move the screen completly accross the world, jump instead
-      if(abs(-xi-_translate.x)>0.95*conf::WIDTH || abs(-yi-_translate.y)>0.95*conf::HEIGHT){
-        _translate.x= -xi; _translate.y= -yi;
+      if (abs(-xi - _translate.x) > 0.95 * conf::WIDTH ||
+          abs(-yi - _translate.y) > 0.95 * conf::HEIGHT) {
+        _translate.x = -xi;
+        _translate.y = -yi;
       } else {
-        float speed= conf::SNAP_SPEED;
-        if(_scalemult>0.5) speed= cap(speed*pow(_scalemult + 0.5,3));
-        _translate.x+= speed*(-xi-_translate.x); _translate.y+= speed*(-yi-_translate.y);
+        float speed = conf::SNAP_SPEED;
+        if (_scalemult > 0.5) speed = cap(speed * pow(_scalemult + 0.5, 3));
+        _translate.x += speed * (-xi - _translate.x);
+        _translate.y += speed * (-yi - _translate.y);
       }
     }
   }
@@ -489,7 +593,7 @@ void GLView::renderScene() {
 
 void GLView::renderProfile() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glClearColor(0.129, 0.145, 0.168, 255);
+  glClearColor(0.129, 0.145, 0.168, 0);
 
   glMatrixMode(GL_PROJECTION);
   glPushMatrix();
@@ -512,103 +616,110 @@ void GLView::renderProfile() {
     glColor4f(0.23, 0.25, 0.3, 1);
     glVertex3f(10, 10, 0);
     glVertex3f(10, 150, 0);
-    glVertex3f(ww - 10, 150, 0);
-    glVertex3f(ww - 10, 10, 0);
+    glVertex3f(160, 150, 0);
+    glVertex3f(160, 10, 0);
 
     glBegin(GL_QUADS);
     glColor4f(0.10, 0.113, 0.137, 1);
     glVertex3f(15, 35, 0);
     glVertex3f(15, 145, 0);
-    glVertex3f(ww - 15, 145, 0);
-    glVertex3f(ww - 15, 35, 0);
+    glVertex3f(155, 145, 0);
+    glVertex3f(155, 35, 0);
+
+    glBegin(GL_QUADS);
+    glColor4f(0.23, 0.25, 0.3, 1);
+    glVertex3f(170, 10, 0);
+    glVertex3f(170, 150, 0);
+    glVertex3f(ww - 10, 150, 0);
+    glVertex3f(ww - 10, 10, 0);
 
     //slightly transparent background
     glBegin(GL_QUADS);
     glColor4f(0.23, 0.25, 0.3, 1);
-    glVertex3f(10, 160, 0);
-    glVertex3f(10, 250, 0);
-    glVertex3f(ww - 10, 250, 0);
-    glVertex3f(ww - 10, 160, 0);
+    glVertex3f(10, 155, 0);
+    glVertex3f(10, 240, 0);
+    glVertex3f(ww - 10, 240, 0);
+    glVertex3f(ww - 10, 155, 0);
 
     //slightly transparent background
     glBegin(GL_QUADS);
-    glColor4f(0.23, 0.25, 0.3, 1);
-    glVertex3f(10, 260, 0);
-    glVertex3f(10, 570, 0);
-    glVertex3f(ww - 10, 570, 0);
-    glVertex3f(ww - 10, 260, 0);
+    glColor4f(1, 0.5, 0.5, 1);
+    glVertex3f(10, 245, 0);
+    glVertex3f(10, wh - 10, 0);
+    glVertex3f(ww - 10, wh - 10, 0);
+    glVertex3f(ww - 10, 245, 0);
 
     //stomach bar
 //    glColor4f(0.15,0.17,0.2,0.7);
     glColor4f(0.10, 0.113, 0.137, 1);
-    glVertex3f(15, 210, 0);
-    glVertex3f(15, 245, 0);
-    glVertex3f(ww - 15, 245, 0);
-    glVertex3f(ww - 15, 210, 0);
+    glVertex3f(175, 95, 0);
+    glVertex3f(175, 145, 0);
+    glVertex3f(ww - 15, 145, 0);
+    glVertex3f(ww - 15, 95, 0);
 
     glColor3f(0, 0.6, 0);
-    glVertex3f(16, 211, 0);
-    glVertex3f(16, 222, 0);
-    glVertex3f(selected.stomach[Stomach::PLANT] * 270 + (14), 222, 0);
-    glVertex3f(selected.stomach[Stomach::PLANT] * 270 + (14), 211, 0);
+    glVertex3f(176, 96, 0);
+    glVertex3f(176, 112, 0);
+    glVertex3f(selected.stomach[Stomach::PLANT] * 360 + (175), 112, 0);
+    glVertex3f(selected.stomach[Stomach::PLANT] * 360 + (175), 96, 0);
 
     glColor3f(0.6, 0.6, 0);
-    glVertex3f(16, 233, 0);
-    glVertex3f(16, 222, 0);
-    glVertex3f(selected.stomach[Stomach::FRUIT] * 270 + (14), 222, 0);
-    glVertex3f(selected.stomach[Stomach::FRUIT] * 270 + (14), 233, 0);
+    glVertex3f(176, 112, 0);
+    glVertex3f(176, 128, 0);
+    glVertex3f(selected.stomach[Stomach::FRUIT] * 360 + (175), 128, 0);
+    glVertex3f(selected.stomach[Stomach::FRUIT] * 360 + (175), 112, 0);
 
     glColor3f(0.6, 0, 0);
-    glVertex3f(16, 233, 0);
-    glVertex3f(16, 244, 0);
-    glVertex3f(selected.stomach[Stomach::MEAT] * 270 + (14), 244, 0);
-    glVertex3f(selected.stomach[Stomach::MEAT] * 270 + (14), 233, 0);
+    glVertex3f(176, 128, 0);
+    glVertex3f(176, 144, 0);
+    glVertex3f(selected.stomach[Stomach::MEAT] * 360 + (175), 144, 0);
+    glVertex3f(selected.stomach[Stomach::MEAT] * 360 + (175), 128, 0);
 
     //repcounter bar
     glColor4f(0.10, 0.113, 0.137, 1);
-    glVertex3f(15, 185, 0);
-    glVertex3f(15, 200, 0);
-    glVertex3f(ww - 15, 200, 0);
-    glVertex3f(ww - 15, 185, 0);
+    glVertex3f(175, 55, 0);
+    glVertex3f(175, 90, 0);
+    glVertex3f(ww - 15, 90, 0);
+    glVertex3f(ww - 15, 55, 0);
     glColor3f(0, 0.7, 0.7);
-    glVertex3f(16, 186, 0);
-    glVertex3f(16, 199, 0);
-    glVertex3f(cap(selected.repcounter / _world->REPRATE) * 270 + (14), 199, 0);
-    glVertex3f(cap(selected.repcounter / _world->REPRATE) * 270 + (14), 186, 0);
+    glVertex3f(176, 56, 0);
+    glVertex3f(176, 89, 0);
+    glVertex3f(cap(selected.repcounter / _world->REPRATE) * 360 + (175), 89, 0);
+    glVertex3f(cap(selected.repcounter / _world->REPRATE) * 360 + (175), 56, 0);
 
     //health bar
     glColor4f(0.10, 0.113, 0.137, 1);
-    glVertex3f(15, 165, 0);
-    glVertex3f(15, 180, 0);
-    glVertex3f(ww - 15, 180, 0);
-    glVertex3f(ww - 15, 165, 0);
+    glVertex3f(175, 15, 0);
+    glVertex3f(175, 50, 0);
+    glVertex3f(ww - 15, 50, 0);
+    glVertex3f(ww - 15, 15, 0);
     glColor3f(0, 0.8, 0);
-    glVertex3f(16, 166, 0);
-    glVertex3f(16, 179, 0);
-    glVertex3f(selected.health / 2.0 * 270 + (14), 179, 0);
-    glVertex3f(selected.health / 2.0 * 270 + (14), 166, 0);
+    glVertex3f(176, 16, 0);
+    glVertex3f(176, 49, 0);
+    glVertex3f(selected.health / 2.0 * 360 + (175), 49, 0);
+    glVertex3f(selected.health / 2.0 * 360 + (175), 16, 0);
     glEnd();
 
     //draw Ghost Unit
-    drawUnit(selected, ww / 2, 90, true);
+    drawUnit(selected, 90, 90, true);
 
     //write text and values
     //Unit ID
     sprintf(_buf, "ID: %d", selected.id);
-    RenderString(ww / 2 - (strlen(_buf) * 2),
+    RenderString(90 - (strlen(_buf) * 2),
                  25, GLUT_BITMAP_HELVETICA_12,
                  _buf, 0.8f, 1.0f, 1.0f);
 
     //Health
     sprintf(_buf, "Health: %.2f/2", selected.health);
-    RenderString(ww / 2 - (strlen(_buf) * 2),
-                 175, GLUT_BITMAP_HELVETICA_12,
+    RenderString(((ww - 15) + 175) / 2 - (strlen(_buf) * 2),
+                 35, GLUT_BITMAP_HELVETICA_12,
                  _buf, 0.8f, 1.0f, 1.0f);
 
     //Repcounter
     sprintf(_buf, "Child: %.2f/%.0f", selected.repcounter, _world->REPRATE);
-    RenderString(ww / 2 - (strlen(_buf) * 2),
-                 197, GLUT_BITMAP_HELVETICA_12,
+    RenderString(((ww - 15) + 175) / 2 - (strlen(_buf) * 2),
+                 75, GLUT_BITMAP_HELVETICA_12,
                  _buf, 0.8f, 1.0f, 1.0f);
 
     //Stomach
@@ -621,21 +732,21 @@ void GLView::renderProfile() {
     if (selected.isHerbivore()) sprintf(_buf, "Herbivore");
     else if (selected.isFrugivore()) sprintf(_buf, "Frugivore");
     else if (selected.isCarnivore()) sprintf(_buf, "Carnivore");
-    else sprintf(_buf, "\"Dead\"...");
-    RenderString(ww / 2 - (strlen(_buf) * 2),
-                 228, GLUT_BITMAP_HELVETICA_12,
+    else sprintf(_buf, "Dead");
+    RenderString(((ww - 15) + 175) / 2 - (strlen(_buf) * 2),
+                 125, GLUT_BITMAP_HELVETICA_12,
                  _buf, 0.8f, 1.0f, 1.0f);
 
     //age
     sprintf(_buf, "Age: %d", selected.age);
-    RenderString(30,
-                 280, GLUT_BITMAP_HELVETICA_12,
+    RenderString(15,
+                 170, GLUT_BITMAP_HELVETICA_12,
                  _buf, 0.8f, 1.0f, 1.0f);
 
     //Generation
     sprintf(_buf, "Gen: %d", selected.gencount);
-    RenderString(30,
-                 295, GLUT_BITMAP_HELVETICA_12,
+    RenderString(115,
+                 170, GLUT_BITMAP_HELVETICA_12,
                  _buf, 0.8f, 1.0f, 1.0f);
 
     //Temperature Preference
@@ -644,8 +755,8 @@ void GLView::renderProfile() {
     else if (selected.temperature_preference > 0.7)
       sprintf(_buf, "Cold-loving(%.3f)", selected.temperature_preference);
     else sprintf(_buf, "Temperate(%.3f)", selected.temperature_preference);
-    RenderString(30,
-                 535, GLUT_BITMAP_HELVETICA_12,
+    RenderString(215,
+                 230, GLUT_BITMAP_HELVETICA_12,
                  _buf, 0.8f, 1.0f, 1.0f);
 
     //Lung-type
@@ -653,47 +764,47 @@ void GLView::renderProfile() {
     else if (selected.lungs > 0.7)
       sprintf(_buf, "Terrestrial(%.3f)", selected.lungs);
     else sprintf(_buf, "Amphibious(%.3f)", selected.lungs);
-    RenderString(30,
-                 520, GLUT_BITMAP_HELVETICA_12,
+    RenderString(115,
+                 230, GLUT_BITMAP_HELVETICA_12,
                  _buf, 0.8f, 1.0f, 1.0f);
 
     //Radius
     sprintf(_buf, "Radius: %.2f", selected.radius);
-    RenderString(30,
-                 505, GLUT_BITMAP_HELVETICA_12,
+    RenderString(15,
+                 230, GLUT_BITMAP_HELVETICA_12,
                  _buf, 0.8f, 1.0f, 1.0f);
 
 
     //Mutrates
     sprintf(_buf, "Mutrate1: %.3f", selected.MUTRATE1);
-    RenderString(30,
-                 550, GLUT_BITMAP_HELVETICA_12,
+    RenderString(315,
+                 230, GLUT_BITMAP_HELVETICA_12,
                  _buf, 0.8f, 1.0f, 1.0f);
 
     sprintf(_buf, "Mutrate2: %.3f", selected.MUTRATE2);
-    RenderString(ww / 2 + 30,
-                 550, GLUT_BITMAP_HELVETICA_12,
+    RenderString(415,
+                 230, GLUT_BITMAP_HELVETICA_12,
                  _buf, 0.8f, 1.0f, 1.0f);
 
     //Metabolism
     sprintf(_buf, "Metab: %.2f", selected.metabolism);
-    RenderString(30,
-                 490, GLUT_BITMAP_HELVETICA_12,
+    RenderString(415,
+                 210, GLUT_BITMAP_HELVETICA_12,
                  _buf, 0.8f, 1.0f, 1.0f);
 
     //Hybrid
     if (selected.hybrid) sprintf(_buf, "Hybrid");
     else sprintf(_buf, "Budded");
-    RenderString(30,
-                 475, GLUT_BITMAP_HELVETICA_12,
+    RenderString(315,
+                 210, GLUT_BITMAP_HELVETICA_12,
                  _buf, 0.8f, 1.0f, 1.0f);
 
     //Giving
     if (selected.give > 0.5) sprintf(_buf, "Generous");
     else if (selected.give > 0.01) sprintf(_buf, "Autocentric");
     else sprintf(_buf, "Selfish");
-    RenderString(30,
-                 460, GLUT_BITMAP_HELVETICA_12,
+    RenderString(215,
+                 210, GLUT_BITMAP_HELVETICA_12,
                  _buf, 0.8f, 1.0f, 1.0f);
 
     //Spike
@@ -703,54 +814,54 @@ void GLView::renderProfile() {
       float val = _world->SPIKEMULT * selected.spikeLength * mw;
       sprintf(_buf, "Spike: %.2f h", val);
     } else sprintf(_buf, "Not Spikey");
-    RenderString(30,
-                 445, GLUT_BITMAP_HELVETICA_12,
+    RenderString(115,
+                 210, GLUT_BITMAP_HELVETICA_12,
                  _buf, 0.8f, 1.0f, 1.0f);
 
     //Stats: Children
     sprintf(_buf, "Children: %d", selected.children);
-    RenderString(30,
-                 340, GLUT_BITMAP_HELVETICA_12,
+    RenderString(415,
+                 170, GLUT_BITMAP_HELVETICA_12,
                  _buf, 0.8f, 1.0f, 1.0f);
 
     //Trait: Strength
     if (selected.strength > 0.7) sprintf(_buf, "Strong!");
     else if (selected.strength > 0.3) sprintf(_buf, "Not Weak");
     else sprintf(_buf, "Weak!");
-    RenderString(30,
-                 370, GLUT_BITMAP_HELVETICA_12,
+    RenderString(115,
+                 190, GLUT_BITMAP_HELVETICA_12,
                  _buf, 0.8f, 1.0f, 1.0f);
 
     //Stats: Killed
     sprintf(_buf, "Killed: %d", selected.killed);
-    RenderString(30,
-                 355, GLUT_BITMAP_HELVETICA_12,
+    RenderString(15,
+                 190, GLUT_BITMAP_HELVETICA_12,
                  _buf, 0.8f, 1.0f, 1.0f);
 
     //Trait: Num Babies
     sprintf(_buf, "Num Babies: %d", selected.numbabies);
-    RenderString(30,
-                 325, GLUT_BITMAP_HELVETICA_12,
+    RenderString(315,
+                 170, GLUT_BITMAP_HELVETICA_12,
                  _buf, 0.8f, 1.0f, 1.0f);
 
     //Output: Sexual projection
     if (selected.sexproject) sprintf(_buf, "Sexting");
     else sprintf(_buf, "Not Sexting");
-    RenderString(30,
-                 385, GLUT_BITMAP_HELVETICA_12,
+    RenderString(215,
+                 190, GLUT_BITMAP_HELVETICA_12,
                  _buf, 0.8f, 1.0f, 1.0f);
 
     //Species ID (Genome)
     sprintf(_buf, "Gene: %d", selected.species);
-    RenderString(30,
-                 310, GLUT_BITMAP_HELVETICA_12,
+    RenderString(215,
+                 170, GLUT_BITMAP_HELVETICA_12,
                  _buf, 0.8f, 1.0f, 1.0f);
 
     //Jumping status
     if (selected.jump <= 0) sprintf(_buf, "Grounded");
     else sprintf(_buf, "Airborne!");
-    RenderString(30,
-                 400, GLUT_BITMAP_HELVETICA_12,
+    RenderString(315,
+                 190, GLUT_BITMAP_HELVETICA_12,
                  _buf, 0.8f, 1.0f, 1.0f);
 
     //Grab status
@@ -758,19 +869,223 @@ void GLView::renderProfile() {
       if (selected.grabID == -1) sprintf(_buf, "Seeking");
       else sprintf(_buf, "Hold: %d", selected.grabID);
     } else sprintf(_buf, "Isolated");
-    RenderString(30,
-                 415, GLUT_BITMAP_HELVETICA_12,
+    RenderString(415,
+                 190, GLUT_BITMAP_HELVETICA_12,
                  _buf, 0.8f, 1.0f, 1.0f);
 
     //Stats: Biting
     if (selected.jawrend != 0)
       sprintf(_buf, "Bite: %.2f h", abs(selected.jawPosition *
-                                       _world->HEALTHLOSS_JAWSNAP));
+                                        _world->HEALTHLOSS_JAWSNAP));
     else sprintf(_buf, "Not Biting");
-    RenderString(30,
-                 430, GLUT_BITMAP_HELVETICA_12,
+    RenderString(15,
+                 210, GLUT_BITMAP_HELVETICA_12,
                  _buf, 0.8f, 1.0f, 1.0f);
 
+
+    glBegin(GL_QUADS);
+    float    col;
+    float    yy           = 15;
+    float    xx           = 15;
+    float    ss           = 16;
+    float    offx         = 0;
+    for (int j            = 0; j < Input::INPUT_SIZE; j++) {
+      col = selected.in[j];
+      if (j == Input::TEMP)
+        glColor3f(col, (2 - col) / 2, (1 - col));
+      glColor3f(col, col, col);
+      glVertex3f(15, 250 + ss * j, 0.0f);
+      glVertex3f(15, 250 + xx + ss * j, 0.0f);
+      glVertex3f(15 + yy, 250 + xx + ss * j, 0.0f);
+      glVertex3f(15 + yy, 250 + ss * j, 0.0f);
+      glEnd();
+      if (j == Input::CLOCK1 || j == Input::CLOCK2 || j == Input::CLOCK3) {
+        RenderString(8 + yy * 2 / 3, 257 + xx / 3 + ss * j,
+                     GLUT_BITMAP_HELVETICA_12,
+                     "Q", 0.0f, 0.0f, 0.0f);
+      } else if (j == Input::TEMP) {
+        RenderString(8 + yy * 2 / 3, 257 + xx / 3 + ss * j,
+                     GLUT_BITMAP_HELVETICA_12,
+                     "T", 0.8f, 0.5f, 0.0f);
+      } else if (j == Input::HEARING1 || j == Input::HEARING2) {
+        RenderString(8 + yy * 2 / 3, 257 + xx / 3 + ss * j,
+                     GLUT_BITMAP_HELVETICA_12,
+                     "E", 1.0f, 1.0f, 1.0f);
+      }
+      glBegin(GL_QUADS);
+    }
+    yy += 5;
+    for (int j = 0; j < Output::OUTPUT_SIZE; j++) {
+      col = selected.out[j];
+      if (j == Output::RED)
+        glColor3f(col, 0, 0);
+      else if (j == Output::GRE)
+        glColor3f(0, col, 0);
+      else if (j == Output::BLU)
+        glColor3f(0, 0, col);
+      else if (j == Output::JUMP)
+        glColor3f(col, col, 0);
+      else if (j == Output::GRAB)
+        glColor3f(0, col, col);
+      else if (j == Output::TONE)
+        glColor3f((1 - col) * (1 - col), 1 - fabs(col - 0.5) * 2, col * col);
+      else glColor3f(col, col, col);
+      glVertex3f(ww - yy * 2, 250 + ss * j, 0.0f);
+      glVertex3f(ww - yy * 2, 250 + xx + ss * j, 0.0f);
+      glVertex3f(ww - yy * 2 + ss, 250 + xx + ss * j, 0.0f);
+      glVertex3f(ww - yy * 2 + ss, 250 + ss * j, 0.0f);
+      glEnd();
+      if (j == Output::LEFT_WHEEL_B || j == Output::LEFT_WHEEL_F ||
+          j == Output::RIGHT_WHEEL_B || j == Output::RIGHT_WHEEL_F) {
+        RenderString(ww - yy - 15, 255 + xx / 3 + ss * j,
+                     GLUT_BITMAP_HELVETICA_12, "!", 0.0f, 1.0f, 0.0f);
+      } else if (j == Output::VOLUME) {
+        RenderString(ww - yy - 15, 255 + xx / 3 + ss * j,
+                     GLUT_BITMAP_HELVETICA_12, "V", 1.0f, 1.0f, 1.0f);
+      } else if (j == Output::CLOCKF3) {
+        RenderString(ww - yy - 15, 255 + xx / 3 + ss * j,
+                     GLUT_BITMAP_HELVETICA_12, "Q", 0.0f, 0.0f, 0.0f);
+      } else if (j == Output::SPIKE) {
+        RenderString(ww - yy - 15, 255 + xx / 3 + ss * j,
+                     GLUT_BITMAP_HELVETICA_12, "S", 1.0f, 0.0f, 0.0f);
+      } else if (j == Output::PROJECT) {
+        RenderString(ww - yy - 15, 255 + xx / 3 + ss * j,
+                     GLUT_BITMAP_HELVETICA_12, "P", 0.5f, 0.0f, 0.5f);
+      } else if (j == Output::JAW) {
+        RenderString(ww - yy - 15, 255 + xx / 3 + ss * j,
+                     GLUT_BITMAP_HELVETICA_12, ">", 1.0f, 1.0f, 0.0f);
+      } else if (j == Output::GIVE) {
+        RenderString(ww - yy - 15, 255 + xx / 3 + ss * j,
+                     GLUT_BITMAP_HELVETICA_12, "G", 0.0f, 0.3f, 0.0f);
+      } else if (j == Output::GRAB) {
+        RenderString(ww - yy - 15, 255 + xx / 3 + ss * j,
+                     GLUT_BITMAP_HELVETICA_12, "G", 0.0f, 0.6f, 0.6f);
+      }
+      glBegin(GL_QUADS);
+
+    }
+    glEnd();
+    glBegin(GL_QUADS);
+    offx = 0;
+    yy   = 30;
+    xx   = 15;
+    ss   = 16;
+    for (int j = 0; j < selected.brain._neurons.size(); j++) {
+      col = selected.brain._neurons[j].out;
+      glColor3f(col, col, col);
+
+      glVertex3f(50 + yy, 250 + offx + ss * j, 0.0f);
+      glVertex3f(50 + yy, 250 + offx + xx + ss * j, 0.0f);
+      glVertex3f(50 + yy + ss, 250 + offx + xx + ss * j, 0.0f);
+      glVertex3f(50 + yy + ss, 250 + offx + ss * j, 0.0f);
+
+      if ((j + 1) % 15 == 0) {
+        yy += ss * 2;
+        offx -= ss * 15;
+      }
+    }
+    glEnd();
+
+    //SOUND
+    glBegin(GL_QUADS);
+    glColor4f(0.10, 0.113, 0.137, 1);
+    glVertex3f(50, wh - 15, 0);
+    glVertex3f(50, wh - 95, 0);
+    glVertex3f(ww - 15, wh - 95, 0);
+    glVertex3f(ww - 15, wh - 15, 0);
+
+    //each ear gets its hearing zone plotted
+    for (int q = 0; q < NUMEARS; q++) {
+      glColor4f(1 - (q / (NUMEARS - 1)), q / (NUMEARS - 1), 0,
+                0.10 + 0.10 * (1 - q / (NUMEARS - 1)));
+      if (selected.hearlow[q] + _world->SOUNDPITCHRANGE * 2 <
+          selected.hearhigh[q]) {
+        glVertex3f(
+                52 + 485 * cap(selected.hearlow[q] + _world->SOUNDPITCHRANGE),
+                wh - 17, 0);
+        glVertex3f(
+                52 + 485 * cap(selected.hearlow[q] + _world->SOUNDPITCHRANGE),
+                wh - 93, 0);
+        glVertex3f(
+                52 + 485 * cap(selected.hearhigh[q] - _world->SOUNDPITCHRANGE),
+                wh - 93, 0);
+        glVertex3f(
+                52 + 485 * cap(selected.hearhigh[q] - _world->SOUNDPITCHRANGE),
+                wh - 17, 0);
+      }
+
+      glVertex3f(52 + 485 * selected.hearlow[q], wh - 17, 0);
+      glVertex3f(52 + 485 * selected.hearlow[q], wh - 93, 0);
+      glVertex3f(52 + 485 * selected.hearhigh[q], wh - 93, 0);
+      glVertex3f(52 + 485 * selected.hearhigh[q], wh - 17, 0);
+    }
+    glEnd();
+    glBegin(GL_LINES);
+    for (int e = 0; e < _world->selectedSounds.size(); e++) {
+      float volume = (int) _world->selectedSounds[e];
+      float tone   = _world->selectedSounds[e] - volume;
+      volume /= 100;
+
+      float fiz = 1;
+      if (volume >= 1)
+        volume = cap(volume - 1.0);
+      else
+        fiz = 0.4;
+
+      if (tone == 0.25)
+        glColor4f(0.0, 0.8, 0.0, fiz);
+      else
+        glColor4f(0.7, 0.7, 0.7, fiz);
+
+      glVertex3f(52 + 485 * tone, wh - 93, 0);
+      glVertex3f(52 + 485 * tone, wh - 17 * volume, 0);
+    }
+    glEnd();
+
+    //now show our own sound, colored by tone
+    glLineWidth(2);
+    glBegin(GL_LINES);
+    glColor4f((1 - selected.tone) * (1 - selected.tone),
+              1 - fabs(selected.tone - 0.5) * 2, selected.tone * selected.tone,
+              0.5);
+    glVertex3f(52 + 176 * selected.tone, wh - 93, 0);
+    glVertex3f(52 + 176 * selected.tone, wh - 17 * selected.volume, 0);
+    glEnd();
+    glLineWidth(1);
+
+    //eyesight profile. Draw a box with colored disks
+    glBegin(GL_QUADS);
+    glColor4f(0.10, 0.113, 0.137, 1);
+    glVertex3f(50, wh - 180, 0);
+    glVertex3f(50, wh - 100, 0);
+    glVertex3f(ww - 15, wh - 100, 0);
+    glVertex3f(ww - 15, wh - 180, 0);
+    glEnd();
+
+    for (int q = 0; q < NUMEYES; q++) {
+      glBegin(GL_POLYGON);
+      glColor3f(selected.in[Input::EYES + q * 3],
+                selected.in[Input::EYES + 1 + q * 3],
+                selected.in[Input::EYES + 2 + q * 3]);
+      Forms::drawCircle(Vector2d(75 + selected.eyedir[q] / 2 / M_PI * 445, wh-140),
+                        selected.eyefov[q] / M_PI * 30);
+      glEnd();
+    }
+
+    glBegin(GL_LINES);
+    glColor3f(1, 1, 1);
+    glVertex3f(75, wh-140, 0);
+    glVertex3f(ww-30, wh-140, 0);
+    glVertex3f(50+(ww-15-50)/2, wh-100, 0);
+    glVertex3f(50+(ww-15-50)/2, wh-180, 0);
+
+    glVertex3f(75, wh-100, 0);
+    glVertex3f(75, wh-180, 0);
+
+    glVertex3f(ww-30, wh-100, 0);
+    glVertex3f(ww-30, wh-180, 0);
+
+    glEnd();
   }
 
   glPopMatrix();
@@ -849,10 +1164,12 @@ void GLView::renderStats() {
 
   //current population vertical bars
   glVertex3f(-2020 + _world->ptr * 10, conf::HEIGHT, 0);
-  glVertex3f(-2020 + _world->ptr * 10, conf::HEIGHT - mm * _world->getUnits(), 0);
+  glVertex3f(-2020 + _world->ptr * 10, conf::HEIGHT - mm * _world->getUnits(),
+             0);
   glColor3f(0, 0, 0);
   glVertex3f(-2020 + _world->ptr * 10, conf::HEIGHT, 0);
-  glVertex3f(-2020 + _world->ptr * 10, conf::HEIGHT - mm * _world->getAlive(), 0);
+  glVertex3f(-2020 + _world->ptr * 10, conf::HEIGHT - mm * _world->getAlive(),
+             0);
   glEnd();
 
   //labels for current population bars
@@ -870,287 +1187,331 @@ void GLView::renderStats() {
 
 void GLView::drawUnit(const Evolve::Unit &unit, float x, float y, bool ghost) {
   float n;
-  float r= unit.radius;
-  float rp= unit.radius+2.5;
+  float r  = unit.radius;
+  float rp = unit.radius + 2.5;
 
-  if (_live.unitsvis!=Visual::NONE) {
+  if (_live.unitsvis != Visual::NONE) {
 
     //color assignment
-    float red= 0,gre= 0,blu= 0;
-    float discomfort= 0;
+    float red        = 0, gre = 0, blu = 0;
+    float discomfort = 0;
 
     //first, calculate colors which also have indicator boxes
-    discomfort= cap(sqrt(abs(2.0*abs(unit.pos.y/conf::HEIGHT - 0.5) - unit.temperature_preference)));
-    if (discomfort<0.005) discomfort= 0;
+    discomfort = cap(sqrt(abs(2.0 * abs(unit.pos.y / conf::HEIGHT - 0.5) -
+                              unit.temperature_preference)));
+    if (discomfort < 0.005) discomfort = 0;
 
-    float stomach_red= cap(pow(unit.stomach[Stomach::MEAT],2)+pow(unit.stomach[Stomach::FRUIT],2)-pow(unit.stomach[Stomach::PLANT],2));
-    float stomach_gre= cap(pow(unit.stomach[Stomach::PLANT],2)/2+pow(unit.stomach[Stomach::FRUIT],2)-pow(unit.stomach[Stomach::MEAT],2));
+    float stomach_red = cap(pow(unit.stomach[Stomach::MEAT], 2) +
+                            pow(unit.stomach[Stomach::FRUIT], 2) -
+                            pow(unit.stomach[Stomach::PLANT], 2));
+    float stomach_gre = cap(pow(unit.stomach[Stomach::PLANT], 2) / 2 +
+                            pow(unit.stomach[Stomach::FRUIT], 2) -
+                            pow(unit.stomach[Stomach::MEAT], 2));
 
-    float species_red= (cos((float)unit.species/97*M_PI)+1.0)/2.0;
-    float species_gre= (sin((float)unit.species/47*M_PI)+1.0)/2.0;
-    float species_blu= (cos((float)unit.species/21*M_PI)+1.0)/2.0;
+    float species_red = (cos((float) unit.species / 97 * M_PI) + 1.0) / 2.0;
+    float species_gre = (sin((float) unit.species / 47 * M_PI) + 1.0) / 2.0;
+    float species_blu = (cos((float) unit.species / 21 * M_PI) + 1.0) / 2.0;
 
-    float metab_red= unit.metabolism;
-    float metab_gre= 0.6*unit.metabolism;
-    float metab_blu= 0.2+0.4*abs(unit.metabolism*2-1);
+    float metab_red = unit.metabolism;
+    float metab_gre = 0.6 * unit.metabolism;
+    float metab_blu = 0.2 + 0.4 * abs(unit.metabolism * 2 - 1);
 
-    float lung_red= 0.2+2*unit.lungs*(1-unit.lungs);
-    float lung_gre= 0.4*unit.lungs+0.3;
-    float lung_blu= 0.6*(1-unit.lungs)+0.2;
+    float lung_red = 0.2 + 2 * unit.lungs * (1 - unit.lungs);
+    float lung_gre = 0.4 * unit.lungs + 0.3;
+    float lung_blu = 0.6 * (1 - unit.lungs) + 0.2;
     //land (0.2,0.7,0.2), amph (0.2,0.5,0.5), water (0.2,0.3,0.8)
 
 
     //now colorize units and other things
-    if (_live.unitsvis==Visual::RGB){ //real rgb values
-      red= unit.red; gre= unit.gre; blu= unit.blu;
+    if (_live.unitsvis == Visual::RGB) { //real rgb values
+      red = unit.red;
+      gre = unit.gre;
+      blu = unit.blu;
 
-    } else if (_live.unitsvis==Visual::STOMACH){ //stomach
-      red= stomach_red;
-      gre= stomach_gre;
+    } else if (_live.unitsvis == Visual::STOMACH) { //stomach
+      red = stomach_red;
+      gre = stomach_gre;
 
-    } else if (_live.unitsvis==Visual::DISCOMFORT){ //temp discomfort
-      red= discomfort; gre= (2-discomfort)/2; blu= 1-discomfort;
+    } else if (_live.unitsvis == Visual::DISCOMFORT) { //temp discomfort
+      red = discomfort;
+      gre = (2 - discomfort) / 2;
+      blu = 1 - discomfort;
 
-    } else if (_live.unitsvis==Visual::VOLUME) { //volume
-      red= unit.volume;
-      gre= unit.volume;
-      blu= unit.volume;
+    } else if (_live.unitsvis == Visual::VOLUME) { //volume
+      red = unit.volume;
+      gre = unit.volume;
+      blu = unit.volume;
 
-    } else if (_live.unitsvis==Visual::SPECIES){ //species 
-      red= species_red;
-      gre= species_gre;
-      blu= species_blu;
+    } else if (_live.unitsvis == Visual::SPECIES) { //species
+      red = species_red;
+      gre = species_gre;
+      blu = species_blu;
 
-    } else if (_live.unitsvis==Visual::CROSSABLE){ //crossover-compatable to selection
+    } else if (_live.unitsvis ==
+               Visual::CROSSABLE) { //crossover-compatable to selection
       //all other units look grey if unrelated or if none is selected, b/c then we don't have a reference
-      red= 0.8;
-      gre= 0.8;
-      blu= 0.8;
+      red = 0.8;
+      gre = 0.8;
+      blu = 0.8;
 
-      if(_world->getSelectedUnit()>=0){
-        float deviation= abs(unit.species - _world->units[_world->getSelectedUnit()].species); //species deviation check
-        if (deviation==0) { //exact copies
-          red= 0.2;
-        } else if (deviation<=_world->MAXDEVIATION) {
+      if (_world->getSelectedUnit() >= 0) {
+        float deviation = abs(unit.species -
+                              _world->units[_world->getSelectedUnit()].species); //species deviation check
+        if (deviation == 0) { //exact copies
+          red = 0.2;
+        } else if (deviation <= _world->MAXDEVIATION) {
           //reproducable relatives
-          red= 0;
-          gre= 0;
-        } else if (deviation<=3*_world->MAXDEVIATION) {
+          red = 0;
+          gre = 0;
+        } else if (deviation <= 3 * _world->MAXDEVIATION) {
           //un-reproducable relatives
-          red= 0.6;
-          gre= 0.4;
+          red = 0.6;
+          gre = 0.4;
         }
       }
 
-    } else if (_live.unitsvis==Visual::HEALTH) { //health
-      gre= unit.health<=0.1 ? unit.health : powf(unit.health/2,0.5);
-      red= ((int)(unit.health*1000)%2==0) ? (1.0-unit.health/2)*gre : (1.0-unit.health/2);
+    } else if (_live.unitsvis == Visual::HEALTH) { //health
+      gre = unit.health <= 0.1 ? unit.health : powf(unit.health / 2, 0.5);
+      red = ((int) (unit.health * 1000) % 2 == 0) ? (1.0 - unit.health / 2) *
+                                                    gre : (1.0 -
+                                                           unit.health / 2);
 
-    } else if (_live.unitsvis==Visual::METABOLISM){
-      red= metab_red;
-      gre= metab_gre;
-      blu= metab_blu;
+    } else if (_live.unitsvis == Visual::METABOLISM) {
+      red = metab_red;
+      gre = metab_gre;
+      blu = metab_blu;
 
-    } else if (_live.unitsvis==Visual::LUNGS){
-      red= lung_red;
-      gre= lung_gre;
-      blu= lung_blu;
+    } else if (_live.unitsvis == Visual::LUNGS) {
+      red = lung_red;
+      gre = lung_gre;
+      blu = lung_blu;
     }
 
 
     //handle selected unit
-    if (unit.id==_world->getSelection() && !ghost) {
+    if (unit.id == _world->getSelection() && !ghost) {
       //draw selection
       glLineWidth(2);
       glBegin(GL_LINES);
-      glColor3f(1,1,1);
-      for (int k=0;k<17;k++)
-      {
-        n = k*(M_PI/8);
-        glVertex3f(x+(unit.radius+4/_scalemult)*sin(n),y+(unit.radius+4/_scalemult)*cos(n),0);
-        n = (k+1)*(M_PI/8);
-        glVertex3f(x+(unit.radius+4/_scalemult)*sin(n),y+(unit.radius+4/_scalemult)*cos(n),0);
+      glColor3f(1, 1, 1);
+      for (int k = 0; k < 17; k++) {
+        n = k * (M_PI / 8);
+        glVertex3f(x + (unit.radius + 4 / _scalemult) * sin(n),
+                   y + (unit.radius + 4 / _scalemult) * cos(n), 0);
+        n = (k + 1) * (M_PI / 8);
+        glVertex3f(x + (unit.radius + 4 / _scalemult) * sin(n),
+                   y + (unit.radius + 4 / _scalemult) * cos(n), 0);
       }
       glEnd();
       glLineWidth(1);
 
-      if(_scalemult > .2){
+      if (_scalemult > .2) {
         glPushMatrix();
-        glTranslatef(x-90,y+23,0);
+        glTranslatef(x - 90, y + 23, 0);
 
         //draw profile(s)
         float col;
-        float yy=15;
-        float xx=15;
-        float ss=16;
+        float yy = 15;
+        float xx = 15;
+        float ss = 16;
 
-        if(_live.profilevis==Profile::INOUT || _live.profilevis==Profile::BRAIN){
+        if (_live.profilevis == Profile::INOUT ||
+            _live.profilevis == Profile::BRAIN) {
           //Draw inputs and outputs in in/out mode AND brain mode
           glBegin(GL_QUADS);
-          for (int j=0;j<Input::INPUT_SIZE;j++) {
-            col= unit.in[j];
-            if(j==Input::TEMP) glColor3f(col,(2-col)/2,(1-col));
-            glColor3f(col,col,col);
-            glVertex3f(0+ss*j, 0, 0.0f);
-            glVertex3f(xx+ss*j, 0, 0.0f);
-            glVertex3f(xx+ss*j, yy, 0.0f);
-            glVertex3f(0+ss*j, yy, 0.0f);
-            if(_scalemult > .7){
+          for (int j = 0; j < Input::INPUT_SIZE; j++) {
+            col = unit.in[j];
+            if (j == Input::TEMP) glColor3f(col, (2 - col) / 2, (1 - col));
+            glColor3f(col, col, col);
+            glVertex3f(0 + ss * j, 0, 0.0f);
+            glVertex3f(xx + ss * j, 0, 0.0f);
+            glVertex3f(xx + ss * j, yy, 0.0f);
+            glVertex3f(0 + ss * j, yy, 0.0f);
+            if (_scalemult > .7) {
               glEnd();
-              if(j==Input::CLOCK1 || j==Input::CLOCK2 || j==Input::CLOCK3){
-                RenderString(xx/3+ss*j, yy*2/3, GLUT_BITMAP_HELVETICA_12, "Q", 0.0f, 0.0f, 0.0f);
-              } else if(j==Input::TEMP){
-                RenderString(xx/3+ss*j, yy*2/3, GLUT_BITMAP_HELVETICA_12, "T", 0.8f, 0.5f, 0.0f);
-              } else if(j==Input::HEARING1 || j==Input::HEARING2){
-                RenderString(xx/3+ss*j, yy*2/3, GLUT_BITMAP_HELVETICA_12, "E", 1.0f, 1.0f, 1.0f);
+              if (j == Input::CLOCK1 || j == Input::CLOCK2 ||
+                  j == Input::CLOCK3) {
+                RenderString(xx / 3 + ss * j, yy * 2 / 3,
+                             GLUT_BITMAP_HELVETICA_12, "Q", 0.0f, 0.0f, 0.0f);
+              } else if (j == Input::TEMP) {
+                RenderString(xx / 3 + ss * j, yy * 2 / 3,
+                             GLUT_BITMAP_HELVETICA_12, "T", 0.8f, 0.5f, 0.0f);
+              } else if (j == Input::HEARING1 || j == Input::HEARING2) {
+                RenderString(xx / 3 + ss * j, yy * 2 / 3,
+                             GLUT_BITMAP_HELVETICA_12, "E", 1.0f, 1.0f, 1.0f);
               }
               glBegin(GL_QUADS);
             }
           }
-          yy+=5;
-          for (int j=0;j<Output::OUTPUT_SIZE;j++) {
-            col= unit.out[j];
-            if(j==Output::RED) glColor3f(col,0,0);
-            else if (j==Output::GRE) glColor3f(0,col,0);
-            else if (j==Output::BLU) glColor3f(0,0,col);
-            else if (j==Output::JUMP) glColor3f(col,col,0);
+          yy += 5;
+          for (int j = 0; j < Output::OUTPUT_SIZE; j++) {
+            col = unit.out[j];
+            if (j == Output::RED) glColor3f(col, 0, 0);
+            else if (j == Output::GRE) glColor3f(0, col, 0);
+            else if (j == Output::BLU) glColor3f(0, 0, col);
+            else if (j == Output::JUMP) glColor3f(col, col, 0);
               //				else if (j==Output::GRAB) glColor3f(0,col,col);
-            else if (j==Output::TONE) glColor3f((1-col)*(1-col),1-fabs(col-0.5)*2,col*col);
-            else glColor3f(col,col,col);
-            glVertex3f(0+ss*j, yy, 0.0f);
-            glVertex3f(xx+ss*j, yy, 0.0f);
-            glVertex3f(xx+ss*j, yy+ss, 0.0f);
-            glVertex3f(0+ss*j, yy+ss, 0.0f);
-            if(_scalemult > .7){
+            else if (j == Output::TONE)
+              glColor3f((1 - col) * (1 - col), 1 - fabs(col - 0.5) * 2,
+                        col * col);
+            else glColor3f(col, col, col);
+            glVertex3f(0 + ss * j, yy, 0.0f);
+            glVertex3f(xx + ss * j, yy, 0.0f);
+            glVertex3f(xx + ss * j, yy + ss, 0.0f);
+            glVertex3f(0 + ss * j, yy + ss, 0.0f);
+            if (_scalemult > .7) {
               glEnd();
-              if(j==Output::LEFT_WHEEL_B || j==Output::LEFT_WHEEL_F || j==Output::RIGHT_WHEEL_B || j==Output::RIGHT_WHEEL_F){
-                RenderString(xx/3+ss*j, yy+ss*2/3, GLUT_BITMAP_HELVETICA_12, "!", 0.0f, 1.0f, 0.0f);
-              } else if(j==Output::VOLUME){
-                RenderString(xx/3+ss*j, yy+ss*2/3, GLUT_BITMAP_HELVETICA_12, "V", 1.0f, 1.0f, 1.0f);
-              } else if(j==Output::CLOCKF3){
-                RenderString(xx/3+ss*j, yy+ss*2/3, GLUT_BITMAP_HELVETICA_12, "Q", 0.0f, 0.0f, 0.0f);
-              } else if(j==Output::SPIKE){
-                RenderString(xx/3+ss*j, yy+ss*2/3, GLUT_BITMAP_HELVETICA_12, "S", 1.0f, 0.0f, 0.0f);
-              } else if(j==Output::PROJECT){
-                RenderString(xx/3+ss*j, yy+ss*2/3, GLUT_BITMAP_HELVETICA_12, "P", 0.5f, 0.0f, 0.5f);
-              } else if(j==Output::JAW){
-                RenderString(xx/3+ss*j, yy+ss*2/3, GLUT_BITMAP_HELVETICA_12, ">", 1.0f, 1.0f, 0.0f);
-              } else if(j==Output::GIVE){
-                RenderString(xx/3+ss*j, yy+ss*2/3, GLUT_BITMAP_HELVETICA_12, "G", 0.0f, 0.3f, 0.0f);
-              } else if(j==Output::GRAB){
-                RenderString(xx/3+ss*j, yy+ss*2/3, GLUT_BITMAP_HELVETICA_12, "G", 0.0f, 0.6f, 0.6f);
+              if (j == Output::LEFT_WHEEL_B || j == Output::LEFT_WHEEL_F ||
+                  j == Output::RIGHT_WHEEL_B || j == Output::RIGHT_WHEEL_F) {
+                RenderString(xx / 3 + ss * j, yy + ss * 2 / 3,
+                             GLUT_BITMAP_HELVETICA_12, "!", 0.0f, 1.0f, 0.0f);
+              } else if (j == Output::VOLUME) {
+                RenderString(xx / 3 + ss * j, yy + ss * 2 / 3,
+                             GLUT_BITMAP_HELVETICA_12, "V", 1.0f, 1.0f, 1.0f);
+              } else if (j == Output::CLOCKF3) {
+                RenderString(xx / 3 + ss * j, yy + ss * 2 / 3,
+                             GLUT_BITMAP_HELVETICA_12, "Q", 0.0f, 0.0f, 0.0f);
+              } else if (j == Output::SPIKE) {
+                RenderString(xx / 3 + ss * j, yy + ss * 2 / 3,
+                             GLUT_BITMAP_HELVETICA_12, "S", 1.0f, 0.0f, 0.0f);
+              } else if (j == Output::PROJECT) {
+                RenderString(xx / 3 + ss * j, yy + ss * 2 / 3,
+                             GLUT_BITMAP_HELVETICA_12, "P", 0.5f, 0.0f, 0.5f);
+              } else if (j == Output::JAW) {
+                RenderString(xx / 3 + ss * j, yy + ss * 2 / 3,
+                             GLUT_BITMAP_HELVETICA_12, ">", 1.0f, 1.0f, 0.0f);
+              } else if (j == Output::GIVE) {
+                RenderString(xx / 3 + ss * j, yy + ss * 2 / 3,
+                             GLUT_BITMAP_HELVETICA_12, "G", 0.0f, 0.3f, 0.0f);
+              } else if (j == Output::GRAB) {
+                RenderString(xx / 3 + ss * j, yy + ss * 2 / 3,
+                             GLUT_BITMAP_HELVETICA_12, "G", 0.0f, 0.6f, 0.6f);
               }
               glBegin(GL_QUADS);
             }
 
           }
-          yy+=ss*2;
+          yy += ss * 2;
           glEnd();
         }
 
-        if(_live.profilevis==Profile::BRAIN){
+        if (_live.profilevis == Profile::BRAIN) {
           //draw brain in brain profile mode, complements the i/o as drawn above
           glBegin(GL_QUADS);
-          float offx=0;
-          ss=8;
-          xx=ss;
-          for (int j=0;j<unit.brain._neurons.size();j++) {
+          float offx = 0;
+          ss = 8;
+          xx = ss;
+          for (int j = 0; j < unit.brain._neurons.size(); j++) {
             col = unit.brain._neurons[j].out;
-            glColor3f(col,col,col);
+            glColor3f(col, col, col);
 
-            glVertex3f(offx+0+ss*j, yy, 0.0f);
-            glVertex3f(offx+xx+ss*j, yy, 0.0f);
-            glVertex3f(offx+xx+ss*j, yy+ss, 0.0f);
-            glVertex3f(offx+ss*j, yy+ss, 0.0f);
+            glVertex3f(offx + 0 + ss * j, yy, 0.0f);
+            glVertex3f(offx + xx + ss * j, yy, 0.0f);
+            glVertex3f(offx + xx + ss * j, yy + ss, 0.0f);
+            glVertex3f(offx + ss * j, yy + ss, 0.0f);
 
-            if ((j+1)%30==0) {
-              yy+=ss;
-              offx-=ss*30;
+            if ((j + 1) % 30 == 0) {
+              yy += ss;
+              offx -= ss * 30;
             }
           }
           glEnd();
-        } else if (_live.profilevis==Profile::EYES){
+        } else if (_live.profilevis == Profile::EYES) {
           //eyesight profile. Draw a box with colored disks
           glBegin(GL_QUADS);
-          glColor3f(0,0,0.1);
+          glColor3f(0, 0, 0.1);
           glVertex3f(0, 0, 0);
           glVertex3f(0, 20, 0);
           glVertex3f(90, 20, 0);
           glVertex3f(90, 0, 0);
           glEnd();
 
-          for(int q=0;q<NUMEYES;q++){
+          for (int q = 0; q < NUMEYES; q++) {
             glBegin(GL_POLYGON);
-            glColor3f(unit.in[Input::EYES+q*3],unit.in[Input::EYES+1+q*3],unit.in[Input::EYES+2+q*3]);
-            Forms::drawCircle(Vector2d(15+unit.eyedir[q]/2/M_PI*60,10),unit.eyefov[q]/M_PI*10);
+            glColor3f(unit.in[Input::EYES + q * 3],
+                      unit.in[Input::EYES + 1 + q * 3],
+                      unit.in[Input::EYES + 2 + q * 3]);
+            Forms::drawCircle(Vector2d(15 + unit.eyedir[q] / 2 / M_PI * 60, 10),
+                              unit.eyefov[q] / M_PI * 10);
             glEnd();
           }
 
           glBegin(GL_LINES);
-          glColor3f(0.5,0.5,0.5);
+          glColor3f(0.5, 0.5, 0.5);
           glVertex3f(0, 20, 0);
           glVertex3f(90, 20, 0);
           glVertex3f(90, 0, 0);
           glVertex3f(0, 0, 0);
 
-          glColor3f(0.7,0,0);
+          glColor3f(0.7, 0, 0);
           glVertex3f(0, 0, 0);
           glVertex3f(0, 20, 0);
           glVertex3f(90, 20, 0);
           glVertex3f(90, 0, 0);
 
           glEnd();
-        } else if (_live.profilevis==Profile::SOUND) {
+        } else if (_live.profilevis == Profile::SOUND) {
           //sound profiler
           glBegin(GL_QUADS);
-          glColor3f(0.1,0.1,0.1);
+          glColor3f(0.1, 0.1, 0.1);
           glVertex3f(0, 0, 0);
           glVertex3f(0, 80, 0);
           glVertex3f(180, 80, 0);
           glVertex3f(180, 0, 0);
 
           //each ear gets its hearing zone plotted
-          for(int q=0;q<NUMEARS;q++) {
-            glColor4f(1-(q/(NUMEARS-1)),q/(NUMEARS-1),0,0.10+0.10*(1-q/(NUMEARS-1)));
-            if(unit.hearlow[q]+_world->SOUNDPITCHRANGE*2<unit.hearhigh[q]){
-              glVertex3f(2+176*cap(unit.hearlow[q]+_world->SOUNDPITCHRANGE), 2, 0);
-              glVertex3f(2+176*cap(unit.hearlow[q]+_world->SOUNDPITCHRANGE), 78, 0);
-              glVertex3f(2+176*cap(unit.hearhigh[q]-_world->SOUNDPITCHRANGE), 78, 0);
-              glVertex3f(2+176*cap(unit.hearhigh[q]-_world->SOUNDPITCHRANGE), 2, 0);
+          for (int q = 0; q < NUMEARS; q++) {
+            glColor4f(1 - (q / (NUMEARS - 1)), q / (NUMEARS - 1), 0,
+                      0.10 + 0.10 * (1 - q / (NUMEARS - 1)));
+            if (unit.hearlow[q] + _world->SOUNDPITCHRANGE * 2 <
+                unit.hearhigh[q]) {
+              glVertex3f(
+                      2 + 176 * cap(unit.hearlow[q] + _world->SOUNDPITCHRANGE),
+                      2, 0);
+              glVertex3f(
+                      2 + 176 * cap(unit.hearlow[q] + _world->SOUNDPITCHRANGE),
+                      78, 0);
+              glVertex3f(
+                      2 + 176 * cap(unit.hearhigh[q] - _world->SOUNDPITCHRANGE),
+                      78, 0);
+              glVertex3f(
+                      2 + 176 * cap(unit.hearhigh[q] - _world->SOUNDPITCHRANGE),
+                      2, 0);
             }
 
-            glVertex3f(2+176*unit.hearlow[q], 2, 0);
-            glVertex3f(2+176*unit.hearlow[q], 78, 0);
-            glVertex3f(2+176*unit.hearhigh[q], 78, 0);
-            glVertex3f(2+176*unit.hearhigh[q], 2, 0);
+            glVertex3f(2 + 176 * unit.hearlow[q], 2, 0);
+            glVertex3f(2 + 176 * unit.hearlow[q], 78, 0);
+            glVertex3f(2 + 176 * unit.hearhigh[q], 78, 0);
+            glVertex3f(2 + 176 * unit.hearhigh[q], 2, 0);
           }
           glEnd();
 
           glBegin(GL_LINES);
-          for(int e=0;e<_world->selectedSounds.size();e++) {
+          for (int e = 0; e < _world->selectedSounds.size(); e++) {
             //unpackage each sound entry
-            float volume= (int)_world->selectedSounds[e];
-            float tone= _world->selectedSounds[e]-volume;
-            volume/= 100;
+            float volume = (int) _world->selectedSounds[e];
+            float tone   = _world->selectedSounds[e] - volume;
+            volume /= 100;
 
-            float fiz= 1;
-            if(volume>=1) volume= cap(volume-1.0);
-            else fiz= 0.4;
+            float fiz = 1;
+            if (volume >= 1) volume = cap(volume - 1.0);
+            else fiz = 0.4;
 
-            if(tone==0.25) glColor4f(0.0,0.8,0.0,fiz);
-            else glColor4f(0.7,0.7,0.7,fiz);
+            if (tone == 0.25) glColor4f(0.0, 0.8, 0.0, fiz);
+            else glColor4f(0.7, 0.7, 0.7, fiz);
 
-            glVertex3f(2+176*tone, 78, 0);
-            glVertex3f(2+176*tone, 78-76*volume, 0);
+            glVertex3f(2 + 176 * tone, 78, 0);
+            glVertex3f(2 + 176 * tone, 78 - 76 * volume, 0);
           }
           glEnd();
 
           //now show our own sound, colored by tone
           glLineWidth(2);
           glBegin(GL_LINES);
-          glColor4f((1-unit.tone)*(1-unit.tone), 1-fabs(unit.tone-0.5)*2, unit.tone*unit.tone,0.5);
-          glVertex3f(2+176*unit.tone, 78, 0);
-          glVertex3f(2+176*unit.tone, 78-76*unit.volume, 0);
+          glColor4f((1 - unit.tone) * (1 - unit.tone),
+                    1 - fabs(unit.tone - 0.5) * 2, unit.tone * unit.tone, 0.5);
+          glVertex3f(2 + 176 * unit.tone, 78, 0);
+          glVertex3f(2 + 176 * unit.tone, 78 - 76 * unit.volume, 0);
           glEnd();
           glLineWidth(1);
 
@@ -1158,42 +1519,47 @@ void GLView::drawUnit(const Evolve::Unit &unit, float x, float y, bool ghost) {
 
         glPopMatrix();
 
-        if(_world->isDebug()){
+        if (_world->isDebug()) {
           //draw DIST range on selected in DEBUG
           glBegin(GL_LINES);
-          glColor3f(1,0,1);
-          for (int k=0;k<17;k++)
-          {
-            n = k*(M_PI/8);
-            glVertex3f(x+_world->DIST*sin(n),y+_world->DIST*cos(n),0);
-            n = (k+1)*(M_PI/8);
-            glVertex3f(x+_world->DIST*sin(n),y+_world->DIST*cos(n),0);
+          glColor3f(1, 0, 1);
+          for (int k = 0; k < 17; k++) {
+            n = k * (M_PI / 8);
+            glVertex3f(x + _world->DIST * sin(n), y + _world->DIST * cos(n), 0);
+            n = (k + 1) * (M_PI / 8);
+            glVertex3f(x + _world->DIST * sin(n), y + _world->DIST * cos(n), 0);
           }
           glEnd();
 
           //now spike, share, and grab effective zones
           glBegin(GL_POLYGON);
-          glColor4f(1,0,0,0.35);
-          glVertex3f(x,y,0);
-          glVertex3f(x+(r+unit.spikeLength*_world->SPIKELENGTH)*cos(unit.angle+M_PI/8),
-                     y+(r+unit.spikeLength*_world->SPIKELENGTH)*sin(unit.angle+M_PI/8),0);
-          glVertex3f(x+(r+unit.spikeLength*_world->SPIKELENGTH)*cos(unit.angle),
-                     y+(r+unit.spikeLength*_world->SPIKELENGTH)*sin(unit.angle),0);
-          glVertex3f(x+(r+unit.spikeLength*_world->SPIKELENGTH)*cos(unit.angle-M_PI/8),
-                     y+(r+unit.spikeLength*_world->SPIKELENGTH)*sin(unit.angle-M_PI/8),0);
-          glVertex3f(x,y,0);
+          glColor4f(1, 0, 0, 0.35);
+          glVertex3f(x, y, 0);
+          glVertex3f(x + (r + unit.spikeLength * _world->SPIKELENGTH) *
+                         cos(unit.angle + M_PI / 8),
+                     y + (r + unit.spikeLength * _world->SPIKELENGTH) *
+                         sin(unit.angle + M_PI / 8), 0);
+          glVertex3f(x + (r + unit.spikeLength * _world->SPIKELENGTH) *
+                         cos(unit.angle),
+                     y + (r + unit.spikeLength * _world->SPIKELENGTH) *
+                         sin(unit.angle), 0);
+          glVertex3f(x + (r + unit.spikeLength * _world->SPIKELENGTH) *
+                         cos(unit.angle - M_PI / 8),
+                     y + (r + unit.spikeLength * _world->SPIKELENGTH) *
+                         sin(unit.angle - M_PI / 8), 0);
+          glVertex3f(x, y, 0);
           glEnd();
 
           //grab is currently a range-only thing, change?
           glBegin(GL_POLYGON);
-          glColor4f(0,1,1,0.15);
-          Forms::drawCircle(Vector2d(x,y),r+_world->GRABBING_DISTANCE);
+          glColor4f(0, 1, 1, 0.15);
+          Forms::drawCircle(Vector2d(x, y), r + _world->GRABBING_DISTANCE);
           glEnd();
 
           //health-sharing
           glBegin(GL_POLYGON);
-          glColor4f(0,0.5,0,0.25);
-          Forms::drawCircle(Vector2d(x,y),_world->FOOD_SHARING_DISTANCE);
+          glColor4f(0, 0.5, 0, 0.25);
+          Forms::drawCircle(Vector2d(x, y), _world->FOOD_SHARING_DISTANCE);
           glEnd();
         }
       }
@@ -1239,81 +1605,88 @@ void GLView::drawUnit(const Evolve::Unit &unit, float x, float y, bool ghost) {
     }
 
     //draw indicator of this unit... used for various events
-    if (unit.indicator>0) {
+    if (unit.indicator > 0) {
       glBegin(GL_POLYGON);
-      glColor4f(unit.ir,unit.ig,unit.ib,0.75);
-      Forms::drawCircle(Vector2d(x, y), r+((int)unit.indicator));
+      glColor4f(unit.ir, unit.ig, unit.ib, 0.75);
+      Forms::drawCircle(Vector2d(x, y), r + ((int) unit.indicator));
       glEnd();
     }
 
     //draw giving/receiving
-    if(unit.dfood!=0){
+    if (unit.dfood != 0) {
       glBegin(GL_POLYGON);
-      float mag=cap(abs(unit.dfood)/_world->FOODTRANSFER)*2/3;
-      if(unit.dfood>0) glColor3f(0,mag,0);
-      else glColor3f(mag,0,0); //draw sharing as a thick green or red outline
-      for (int k=0;k<17;k++){
-        n = k*(M_PI/8);
-        glVertex3f(x+rp*sin(n),y+rp*cos(n),0);
-        n = (k+1)*(M_PI/8);
-        glVertex3f(x+rp*sin(n),y+rp*cos(n),0);
+      float mag = cap(abs(unit.dfood) / _world->FOODTRANSFER) * 2 / 3;
+      if (unit.dfood > 0) glColor3f(0, mag, 0);
+      else glColor3f(mag, 0, 0); //draw sharing as a thick green or red outline
+      for (int k = 0; k < 17; k++) {
+        n = k * (M_PI / 8);
+        glVertex3f(x + rp * sin(n), y + rp * cos(n), 0);
+        n = (k + 1) * (M_PI / 8);
+        glVertex3f(x + rp * sin(n), y + rp * cos(n), 0);
       }
       glEnd();
     }
 
-    float tra= unit.health==0 ? 0.4 : 1; //mult for dead units, displayed with more transparent parts
+    float tra = unit.health == 0 ? 0.4
+                                 : 1; //mult for dead units, displayed with more transparent parts
 
-    if (_scalemult > .1 || ghost) { //dont render eyes, ears, or boost if zoomed too far out, but always render them on ghosts
+    if (_scalemult > .1 ||
+        ghost) { //dont render eyes, ears, or boost if zoomed too far out, but always render them on ghosts
       //draw eyes
-      for(int q=0;q<NUMEYES;q++) {
+      for (int q = 0; q < NUMEYES; q++) {
         glBegin(GL_LINES);
-        if (_live.profilevis==Profile::EYES) {
+        if (_live.profilevis == Profile::EYES) {
           //color eyes based on actual input if we're on the eyesight profile
-          glColor4f(unit.in[Input::EYES+q*3],unit.in[Input::EYES+1+q*3],unit.in[Input::EYES+2+q*3],0.75*tra);
-        } else glColor4f(0.5,0.5,0.5,0.75*tra);
-        glVertex3f(x,y,0);
-        float aa= unit.angle+unit.eyedir[q];
-        glVertex3f(x+(r+30)*cos(aa), y+(r+30)*sin(aa), 0);
+          glColor4f(unit.in[Input::EYES + q * 3],
+                    unit.in[Input::EYES + 1 + q * 3],
+                    unit.in[Input::EYES + 2 + q * 3], 0.75 * tra);
+        } else glColor4f(0.5, 0.5, 0.5, 0.75 * tra);
+        glVertex3f(x, y, 0);
+        float aa = unit.angle + unit.eyedir[q];
+        glVertex3f(x + (r + 30) * cos(aa), y + (r + 30) * sin(aa), 0);
         glEnd();
       }
 
       //ears
-      for(int q=0;q<NUMEARS;q++) {
+      for (int q = 0; q < NUMEARS; q++) {
         glBegin(GL_POLYGON);
         //color ears differently if we are set on the sound profile
-        if(_live.profilevis==Profile::SOUND) glColor4f(1-(q/(NUMEARS-1)),q/(NUMEARS-1),0,0.75);
-        else glColor4f(0.6,0.6,0,0.5);
-        float aa= unit.angle + unit.eardir[q];
-        Forms::drawCircle(Vector2d(x+r*cos(aa), y+r*sin(aa)), 2.3);
+        if (_live.profilevis == Profile::SOUND)
+          glColor4f(1 - (q / (NUMEARS - 1)), q / (NUMEARS - 1), 0, 0.75);
+        else glColor4f(0.6, 0.6, 0, 0.5);
+        float aa = unit.angle + unit.eardir[q];
+        Forms::drawCircle(Vector2d(x + r * cos(aa), y + r * sin(aa)), 2.3);
         glEnd();
       }
 
       //boost blur
-      if (unit.boost){
-        for(int q=1;q<4;q++){
-          Vector2f displace(r/4*q*(unit.w1+unit.w2), 0);
-          displace.rotate(unit.angle+M_PI);
+      if (unit.boost) {
+        for (int q = 1; q < 4; q++) {
+          Vector2f displace(r / 4 * q * (unit.w1 + unit.w2), 0);
+          displace.rotate(unit.angle + M_PI);
 
           glBegin(GL_POLYGON);
-          glColor4f(red,gre,blu,0.25);
-          Forms::drawCircle(Vector2d(x+displace.x, y+displace.y), r);
+          glColor4f(red, gre, blu, 0.25);
+          Forms::drawCircle(Vector2d(x + displace.x, y + displace.y), r);
           glEnd();
         }
       }
 
       //vis grabbing
-      if((_scalemult > .3 || ghost) && unit.grabbing>0.5){
+      if ((_scalemult > .3 || ghost) && unit.grabbing > 0.5) {
         glLineWidth(2);
         glBegin(GL_LINES);
 
-        glColor4f(0.0,0.7,0.7,0.75);
-        glVertex3f(x,y,0);
-        float mult= unit.grabID==-1 ? 1 : 0;
-        float aa= unit.angle+M_PI/8*mult;
-        float ab= unit.angle-M_PI/8*mult;
-        glVertex3f(x+(_world->GRABBING_DISTANCE+r)*cos(aa), y+(_world->GRABBING_DISTANCE+r)*sin(aa), 0);
-        glVertex3f(x,y,0);
-        glVertex3f(x+(_world->GRABBING_DISTANCE+r)*cos(ab), y+(_world->GRABBING_DISTANCE+r)*sin(ab), 0);
+        glColor4f(0.0, 0.7, 0.7, 0.75);
+        glVertex3f(x, y, 0);
+        float mult = unit.grabID == -1 ? 1 : 0;
+        float aa   = unit.angle + M_PI / 8 * mult;
+        float ab   = unit.angle - M_PI / 8 * mult;
+        glVertex3f(x + (_world->GRABBING_DISTANCE + r) * cos(aa),
+                   y + (_world->GRABBING_DISTANCE + r) * sin(aa), 0);
+        glVertex3f(x, y, 0);
+        glVertex3f(x + (_world->GRABBING_DISTANCE + r) * cos(ab),
+                   y + (_world->GRABBING_DISTANCE + r) * sin(ab), 0);
         glEnd();
         glLineWidth(1);
 
@@ -1341,59 +1714,65 @@ glLineWidth(2);
 
     glBegin(GL_POLYGON);
     //body
-    glColor4f(red,gre,blu,tra);
+    glColor4f(red, gre, blu, tra);
     Forms::drawCircle(Vector2d(x, y), r);
     glEnd();
 
     glBegin(GL_LINES);
 
     //outline and spikes are effected by the zoom magnitude
-    float blur= cap(4.5*_scalemult-0.5);
-    if (ghost) blur= 1; //disable effect for static rendering
+    float blur = cap(4.5 * _scalemult - 0.5);
+    if (ghost) blur = 1; //disable effect for static rendering
 
     //jaws
-    if ((_scalemult > .08 || ghost) && unit.jawrend>0) {
+    if ((_scalemult > .08 || ghost) && unit.jawrend > 0) {
       //dont render jaws if zoomed too far out, but always render them on ghosts, and only if they've been active within the last few ticks
-      glColor4f(0.9,0.9,0,blur);
-      float mult= 1-powf(abs(unit.jawPosition),0.5);
-      glVertex3f(x+r*cos(unit.angle),y+r*sin(unit.angle),0);
-      glVertex3f(x+(10+r)*cos(unit.angle+M_PI/8*mult), y+(10+r)*sin(unit.angle+M_PI/8*mult), 0);
-      glVertex3f(x+r*cos(unit.angle),y+r*sin(unit.angle),0);
-      glVertex3f(x+(10+r)*cos(unit.angle-M_PI/8*mult), y+(10+r)*sin(unit.angle-M_PI/8*mult), 0);
+      glColor4f(0.9, 0.9, 0, blur);
+      float mult = 1 - powf(abs(unit.jawPosition), 0.5);
+      glVertex3f(x + r * cos(unit.angle), y + r * sin(unit.angle), 0);
+      glVertex3f(x + (10 + r) * cos(unit.angle + M_PI / 8 * mult),
+                 y + (10 + r) * sin(unit.angle + M_PI / 8 * mult), 0);
+      glVertex3f(x + r * cos(unit.angle), y + r * sin(unit.angle), 0);
+      glVertex3f(x + (10 + r) * cos(unit.angle - M_PI / 8 * mult),
+                 y + (10 + r) * sin(unit.angle - M_PI / 8 * mult), 0);
     }
 
     //outline
-    float out_red= 0,out_gre= 0,out_blu= 0;
-    if (unit.jump>0) { //draw jumping as yellow outline
-      out_red= 0.8;
-      out_gre= 0.8;
+    float out_red = 0, out_gre = 0, out_blu = 0;
+    if (unit.jump > 0) { //draw jumping as yellow outline
+      out_red = 0.8;
+      out_gre = 0.8;
     }
-    if (unit.health<=0){ //draw dead as grey outline
-      glColor4f(0.7,0.7,0.7,tra);
-    } else glColor3f(cap(out_red*blur + (1-blur)*red), cap(out_gre*blur + (1-blur)*gre), cap(out_blu*blur + (1-blur)*blu));
-    for (int k=0;k<17;k++)
-    {
-      n = k*(M_PI/8);
-      glVertex3f(x+r*sin(n),y+r*cos(n),0);
-      n = (k+1)*(M_PI/8);
-      glVertex3f(x+r*sin(n),y+r*cos(n),0);
+    if (unit.health <= 0) { //draw dead as grey outline
+      glColor4f(0.7, 0.7, 0.7, tra);
+    } else
+      glColor3f(cap(out_red * blur + (1 - blur) * red),
+                cap(out_gre * blur + (1 - blur) * gre),
+                cap(out_blu * blur + (1 - blur) * blu));
+    for (int k = 0; k < 17; k++) {
+      n = k * (M_PI / 8);
+      glVertex3f(x + r * sin(n), y + r * cos(n), 0);
+      n = (k + 1) * (M_PI / 8);
+      glVertex3f(x + r * sin(n), y + r * cos(n), 0);
     }
 
     //sound waves!
-    if(_live.unitsvis==Visual::VOLUME && !ghost && unit.volume>0){
-      float volume= unit.volume;
-      float count= unit.tone*11+1;
-      for (int l=0; l<=(int)count; l++){
-        float dist= _world->DIST*(l/count)+4*(_world->modcounter%(int)((_world->DIST)/4));
-        if (dist>_world->DIST) dist-= _world->DIST;
-        glColor4f((1-unit.tone)*(1-unit.tone), 1-fabs(unit.tone-0.5)*2, unit.tone*unit.tone, cap((1-dist/_world->DIST)*volume));
+    if (_live.unitsvis == Visual::VOLUME && !ghost && unit.volume > 0) {
+      float    volume = unit.volume;
+      float    count  = unit.tone * 11 + 1;
+      for (int l      = 0; l <= (int) count; l++) {
+        float dist = _world->DIST * (l / count) +
+                     4 * (_world->modcounter % (int) ((_world->DIST) / 4));
+        if (dist > _world->DIST) dist -= _world->DIST;
+        glColor4f((1 - unit.tone) * (1 - unit.tone),
+                  1 - fabs(unit.tone - 0.5) * 2, unit.tone * unit.tone,
+                  cap((1 - dist / _world->DIST) * volume));
 
-        for (int k=0;k<32;k++)
-        {
-          n = k*(M_PI/16);
-          glVertex3f(x+dist*sin(n),y+dist*cos(n),0);
-          n = (k+1)*(M_PI/16);
-          glVertex3f(x+dist*sin(n),y+dist*cos(n),0);
+        for (int k = 0; k < 32; k++) {
+          n = k * (M_PI / 16);
+          glVertex3f(x + dist * sin(n), y + dist * cos(n), 0);
+          n = (k + 1) * (M_PI / 16);
+          glVertex3f(x + dist * sin(n), y + dist * cos(n), 0);
         }
       }
     }
@@ -1401,166 +1780,202 @@ glLineWidth(2);
     //and spike, if harmful
     if ((_scalemult > .08 && unit.isSpikey(_world->SPIKELENGTH)) || ghost) {
       //dont render spike if zoomed too far out, but always render it on ghosts
-      glColor4f(0.7,0,0,blur);
-      glVertex3f(x,y,0);
-      glVertex3f(x+(_world->SPIKELENGTH*unit.spikeLength)*cos(unit.angle),
-                 y+(_world->SPIKELENGTH*unit.spikeLength)*sin(unit.angle),
+      glColor4f(0.7, 0, 0, blur);
+      glVertex3f(x, y, 0);
+      glVertex3f(x + (_world->SPIKELENGTH * unit.spikeLength) * cos(unit.angle),
+                 y + (_world->SPIKELENGTH * unit.spikeLength) * sin(unit.angle),
                  0);
     }
     glEnd();
 
     //some final debug stuff that is shown even on ghosts:
-    if(_world->isDebug() || ghost){
+    if (_world->isDebug() || ghost) {
       //wheels and wheel speeds
-      float wheelangle= unit.angle+ M_PI/2;
+      float wheelangle = unit.angle + M_PI / 2;
       glBegin(GL_LINES);
-      glColor3f(0,1,0);
-      glVertex3f(x+unit.radius/2*cos(wheelangle),y+unit.radius/2*sin(wheelangle),0);
-      glVertex3f(x+unit.radius/2*cos(wheelangle)+20*unit.w1*cos(unit.angle), y+unit.radius/2*sin(wheelangle)+20*unit.w1*sin(unit.angle), 0);
-      wheelangle-= M_PI;
-      glVertex3f(x+unit.radius/2*cos(wheelangle),y+unit.radius/2*sin(wheelangle),0);
-      glVertex3f(x+unit.radius/2*cos(wheelangle)+20*unit.w2*cos(unit.angle), y+unit.radius/2*sin(wheelangle)+20*unit.w2*sin(unit.angle), 0);
+      glColor3f(0, 1, 0);
+      glVertex3f(x + unit.radius / 2 * cos(wheelangle),
+                 y + unit.radius / 2 * sin(wheelangle), 0);
+      glVertex3f(x + unit.radius / 2 * cos(wheelangle) +
+                 20 * unit.w1 * cos(unit.angle),
+                 y + unit.radius / 2 * sin(wheelangle) +
+                 20 * unit.w1 * sin(unit.angle), 0);
+      wheelangle -= M_PI;
+      glVertex3f(x + unit.radius / 2 * cos(wheelangle),
+                 y + unit.radius / 2 * sin(wheelangle), 0);
+      glVertex3f(x + unit.radius / 2 * cos(wheelangle) +
+                 20 * unit.w2 * cos(unit.angle),
+                 y + unit.radius / 2 * sin(wheelangle) +
+                 20 * unit.w2 * sin(unit.angle), 0);
       glEnd();
 
       glBegin(GL_POLYGON);
-      glColor3f(0,1,0);
-      Forms::drawCircle(Vector2d(+unit.radius/2*cos(wheelangle), y+unit.radius/2*sin(wheelangle)), 1);
+      glColor3f(0, 1, 0);
+      Forms::drawCircle(Vector2d(+unit.radius / 2 * cos(wheelangle),
+                                 y + unit.radius / 2 * sin(wheelangle)), 1);
       glEnd();
-      wheelangle+= M_PI;
+      wheelangle += M_PI;
       glBegin(GL_POLYGON);
-      Forms::drawCircle(Vector2d(+unit.radius/2*cos(wheelangle), y+unit.radius/2*sin(wheelangle)), 1);
+      Forms::drawCircle(Vector2d(+unit.radius / 2 * cos(wheelangle),
+                                 y + unit.radius / 2 * sin(wheelangle)), 1);
       glEnd();
     }
 
-    if(!ghost){ //only draw extra infos if not a ghost
+    if (!ghost) { //only draw extra infos if not a ghost
 
-      if(_scalemult > .3) {//hide extra visual data if really far away
+      if (_scalemult > .3) {//hide extra visual data if really far away
 
         //debug stuff
-        if(_world->isDebug()) {
+        if (_world->isDebug()) {
           //debug sight lines: connect to anything selected unit sees
           glBegin(GL_LINES);
-          for (int i=0;i<(int)_world->linesA.size();i++) {
-            glColor3f(1,1,1);
-            glVertex3f(_world->linesA[i].x,_world->linesA[i].y,0);
-            glVertex3f(_world->linesB[i].x,_world->linesB[i].y,0);
+          for (int i = 0; i < (int) _world->linesA.size(); i++) {
+            glColor3f(1, 1, 1);
+            glVertex3f(_world->linesA[i].x, _world->linesA[i].y, 0);
+            glVertex3f(_world->linesB[i].x, _world->linesB[i].y, 0);
           }
           _world->linesA.resize(0);
           _world->linesB.resize(0);
           glEnd();
 
           //debug cell smell box: outlines all cells the selected unit is "smelling"
-          if(unit.id==_world->getSelection()){
+          if (unit.id == _world->getSelection()) {
             int minx, maxx, miny, maxy;
-            int scx= (int) (unit.pos.x/conf::CZ);
-            int scy= (int) (unit.pos.y/conf::CZ);
+            int scx = (int) (unit.pos.x / conf::CZ);
+            int scy = (int) (unit.pos.y / conf::CZ);
 
-            minx= (scx-_world->DIST/conf::CZ/2) > 0 ? (scx-_world->DIST/conf::CZ/2)*conf::CZ : 0;
-            maxx= (scx+1+_world->DIST/conf::CZ/2) < conf::WIDTH/conf::CZ ? (scx+1+_world->DIST/conf::CZ/2)*conf::CZ : conf::WIDTH;
-            miny= (scy-_world->DIST/conf::CZ/2) > 0 ? (scy-_world->DIST/conf::CZ/2)*conf::CZ : 0;
-            maxy= (scy+1+_world->DIST/conf::CZ/2) < conf::HEIGHT/conf::CZ ? (scy+1+_world->DIST/conf::CZ/2)*conf::CZ : conf::HEIGHT;
+            minx = (scx - _world->DIST / conf::CZ / 2) > 0 ?
+                   (scx - _world->DIST / conf::CZ / 2) * conf::CZ : 0;
+            maxx = (scx + 1 + _world->DIST / conf::CZ / 2) <
+                   conf::WIDTH / conf::CZ ?
+                   (scx + 1 + _world->DIST / conf::CZ / 2) * conf::CZ
+                                          : conf::WIDTH;
+            miny = (scy - _world->DIST / conf::CZ / 2) > 0 ?
+                   (scy - _world->DIST / conf::CZ / 2) * conf::CZ : 0;
+            maxy = (scy + 1 + _world->DIST / conf::CZ / 2) <
+                   conf::HEIGHT / conf::CZ ?
+                   (scy + 1 + _world->DIST / conf::CZ / 2) * conf::CZ
+                                           : conf::HEIGHT;
 
             glBegin(GL_LINES);
-            glColor3f(0,1,0);
-            glVertex3f(minx,miny,0);
-            glVertex3f(minx,maxy,0);
-            glVertex3f(minx,maxy,0);
-            glVertex3f(maxx,maxy,0);
-            glVertex3f(maxx,maxy,0);
-            glVertex3f(maxx,miny,0);
-            glVertex3f(maxx,miny,0);
-            glVertex3f(minx,miny,0);
+            glColor3f(0, 1, 0);
+            glVertex3f(minx, miny, 0);
+            glVertex3f(minx, maxy, 0);
+            glVertex3f(minx, maxy, 0);
+            glVertex3f(maxx, maxy, 0);
+            glVertex3f(maxx, maxy, 0);
+            glVertex3f(maxx, miny, 0);
+            glVertex3f(maxx, miny, 0);
+            glVertex3f(minx, miny, 0);
             glEnd();
           }
         }
 
         //tags: quick HUD of basic bot traits/stats
-        int xo=8+unit.radius;
-        int yo=-21;
-        int sep= 2;
-        int le= 9;
-        int wid= 5;
-        int numtags= 8;
+        int xo      = 8 + unit.radius;
+        int yo      = -21;
+        int sep     = 2;
+        int le      = 9;
+        int wid     = 5;
+        int numtags = 8;
 
         //health
         glBegin(GL_QUADS);
-        glColor3f(0,0,0);
-        glVertex3f(x+xo,y+yo,0);
-        glVertex3f(x+xo+5,y+yo,0);
-        glVertex3f(x+xo+5,y+yo+42,0);
-        glVertex3f(x+xo,y+yo+42,0);
+        glColor3f(0, 0, 0);
+        glVertex3f(x + xo, y + yo, 0);
+        glVertex3f(x + xo + 5, y + yo, 0);
+        glVertex3f(x + xo + 5, y + yo + 42, 0);
+        glVertex3f(x + xo, y + yo + 42, 0);
 
-        glColor3f(0,0.8,0);
-        glVertex3f(x+xo,y+yo+21*(2-unit.health),0);
-        glVertex3f(x+xo+5,y+yo+21*(2-unit.health),0);
-        glVertex3f(x+xo+5,y+yo+42,0);
-        glVertex3f(x+xo,y+yo+42,0);
+        glColor3f(0, 0.8, 0);
+        glVertex3f(x + xo, y + yo + 21 * (2 - unit.health), 0);
+        glVertex3f(x + xo + 5, y + yo + 21 * (2 - unit.health), 0);
+        glVertex3f(x + xo + 5, y + yo + 42, 0);
+        glVertex3f(x + xo, y + yo + 42, 0);
 
         //repcounter/energy
-        xo+= 7;
+        xo += 7;
         glBegin(GL_QUADS);
-        glColor3f(0,0,0);
-        glVertex3f(x+xo,y+yo,0);
-        glVertex3f(x+xo+5,y+yo,0);
-        glVertex3f(x+xo+5,y+yo+42,0);
-        glVertex3f(x+xo,y+yo+42,0);
+        glColor3f(0, 0, 0);
+        glVertex3f(x + xo, y + yo, 0);
+        glVertex3f(x + xo + 5, y + yo, 0);
+        glVertex3f(x + xo + 5, y + yo + 42, 0);
+        glVertex3f(x + xo, y + yo + 42, 0);
 
-        glColor3f(0,0.7,0.7);
-        glVertex3f(x+xo,y+yo+42*cap(unit.repcounter/_world->REPRATE),0);
-        glVertex3f(x+xo+5,y+yo+42*cap(unit.repcounter/_world->REPRATE),0);
-        glVertex3f(x+xo+5,y+yo+42,0);
-        glVertex3f(x+xo,y+yo+42,0);
+        glColor3f(0, 0.7, 0.7);
+        glVertex3f(x + xo, y + yo + 42 * cap(unit.repcounter / _world->REPRATE),
+                   0);
+        glVertex3f(x + xo + 5,
+                   y + yo + 42 * cap(unit.repcounter / _world->REPRATE), 0);
+        glVertex3f(x + xo + 5, y + yo + 42, 0);
+        glVertex3f(x + xo, y + yo + 42, 0);
 
         //indicator tags
-        xo+= 7+sep;
-        for(int i=0;i<numtags;i++){
-          int xmult= (int)floor((float)(i/4));
-          int ymult= i%4;
+        xo += 7 + sep;
+        for (int i = 0; i < numtags; i++) {
+          int xmult = (int) floor((float) (i / 4));
+          int ymult = i % 4;
 
           //different tag color schemes go here
-          if (i==0){
-            if(unit.hybrid) glColor3f(0,0,0.8); //hybrid?
-            else if(unit.sexproject) glColor4f(0,0.8,0.8,0.5);
+          if (i == 0) {
+            if (unit.hybrid) glColor3f(0, 0, 0.8); //hybrid?
+            else if (unit.sexproject) glColor4f(0, 0.8, 0.8, 0.5);
             else continue;
-          }
-          else if (i==1) glColor3f(stomach_red,stomach_gre,0); //stomach type
-          else if (i==2) glColor3f(unit.volume,unit.volume,unit.volume); //sound volume emitted
-          else if (i==3) glColor3f(discomfort,(2-discomfort)/2,(1-discomfort)); //temp discomfort
-          else if (i==4) glColor3f(lung_red,lung_gre,lung_blu); //land/water lungs requirement
-          else if (i==7) glColor3f(metab_red,metab_gre,metab_blu); //metabolism
-          else if (i==5){ //ear 1 volume value heard
-            float hear= unit.in[Input::HEARING1];
-            if(hear==0) continue;
-            else glColor3f(hear,hear,hear); //! =D
-          }
-          else if (i==6){ //ear 2 volume value heard
-            float hear= unit.in[Input::HEARING2];
-            if(hear==0) continue;
-            else glColor3f(hear,hear,hear);
+          } else if (i == 1)
+            glColor3f(stomach_red, stomach_gre, 0); //stomach type
+          else if (i == 2)
+            glColor3f(unit.volume, unit.volume,
+                      unit.volume); //sound volume emitted
+          else if (i == 3)
+            glColor3f(discomfort, (2 - discomfort) / 2,
+                      (1 - discomfort)); //temp discomfort
+          else if (i == 4)
+            glColor3f(lung_red, lung_gre,
+                      lung_blu); //land/water lungs requirement
+          else if (i == 7)
+            glColor3f(metab_red, metab_gre, metab_blu); //metabolism
+          else if (i == 5) { //ear 1 volume value heard
+            float hear = unit.in[Input::HEARING1];
+            if (hear == 0) continue;
+            else glColor3f(hear, hear, hear); //! =D
+          } else if (i == 6) { //ear 2 volume value heard
+            float hear = unit.in[Input::HEARING2];
+            if (hear == 0) continue;
+            else glColor3f(hear, hear, hear);
           }
 
-          glVertex3f(x+xo+(wid+sep)*xmult,y+yo+(le+sep)*ymult,0);
-          glVertex3f(x+xo+(wid+sep)*xmult+wid,y+yo+(le+sep)*ymult,0);
-          glVertex3f(x+xo+(wid+sep)*xmult+wid,y+yo+(le+sep)*ymult+le,0);
-          glVertex3f(x+xo+(wid+sep)*xmult,y+yo+(le+sep)*ymult+le,0);
+          glVertex3f(x + xo + (wid + sep) * xmult, y + yo + (le + sep) * ymult,
+                     0);
+          glVertex3f(x + xo + (wid + sep) * xmult + wid,
+                     y + yo + (le + sep) * ymult, 0);
+          glVertex3f(x + xo + (wid + sep) * xmult + wid,
+                     y + yo + (le + sep) * ymult + le, 0);
+          glVertex3f(x + xo + (wid + sep) * xmult,
+                     y + yo + (le + sep) * ymult + le, 0);
         }
         glEnd();
       }
 
-      if(_scalemult > .5) { // hide the number stats when zoomed out
+      if (_scalemult > .5) { // hide the number stats when zoomed out
         //generation count
         sprintf(_buf2, "%i", unit.gencount);
-        RenderString(x-rp*1.414, y-rp*1.414, GLUT_BITMAP_HELVETICA_12, _buf2, 0.8f, 1.0f, 1.0f);
+        RenderString(x - rp * 1.414, y - rp * 1.414, GLUT_BITMAP_HELVETICA_12,
+                     _buf2, 0.8f, 1.0f, 1.0f);
 
         //age
         sprintf(_buf2, "%i", unit.age);
-        float red= _world->HEALTHLOSS_AGING==0 ? 0 : cap((float) unit.age/_world->MAXAGE);
+        float red = _world->HEALTHLOSS_AGING == 0 ? 0 : cap(
+                (float) unit.age / _world->MAXAGE);
         //will be redder the closer it is to MAXAGE if health loss by aging is enabled
-        RenderString(x-rp*1.414, y-rp*1.414-12, GLUT_BITMAP_HELVETICA_12, _buf2, 0.8f, 1.0-red, 1.0-red);
+        RenderString(x - rp * 1.414, y - rp * 1.414 - 12,
+                     GLUT_BITMAP_HELVETICA_12, _buf2, 0.8f, 1.0 - red,
+                     1.0 - red);
 
         //species id
         sprintf(_buf2, "%i", unit.species);
-        RenderString(x-rp*1.414, y-rp*1.414-24, GLUT_BITMAP_HELVETICA_12, _buf2, species_red, species_gre, species_blu);
+        RenderString(x - rp * 1.414, y - rp * 1.414 - 24,
+                     GLUT_BITMAP_HELVETICA_12, _buf2, species_red, species_gre,
+                     species_blu);
       }
     }
   }
@@ -1692,19 +2107,18 @@ void GLView::drawCell(int x, int y, float quantity) {
                Layer::FRUITS + 1) { //fruit: yellow w/ navy blue bg
       glColor4f(quantity * 0.8, quantity * 0.8, 0.1, 1);
     } else if (_live.layersvis == Layer::LAND +
-                                 1) { //land: green if 1, blue if 0, navy blue otherwise (debug)
+                                  1) { //land: green if 1, blue if 0, navy blue otherwise (debug)
       if (quantity == 1) glColor4f(0.3, 0.7, 0.3, 1);
       else if (quantity == 0) glColor4f(0.3, 0.3, 0.9, 1);
       else glColor4f(0, 0, 0.1, 1);
     } else if (_live.layersvis ==
-               Layer::LIGHT + 1) { //light: bright white/yellow w/ navy blue bg
-      //unless moonlight is a thing, then its a grey bg
+               Layer::LIGHT + 1) {
       if (_world->MOONLIT)
         glColor4f(0.5 * quantity + 0.5, 0.5 * quantity + 0.5,
                   quantity * 0.3 + 0.5, 1);
       else glColor4f(quantity, quantity, quantity * 0.7 + 0.1, 1);
     } else if (_live.layersvis == Layer::TEMP +
-                                 1) { //temp: yellow near the equator, blue at the poles
+                                  1) { //temp: yellow near the equator, blue at the poles
       float col = cap(
               2 * abs((float) y * conf::CZ / conf::HEIGHT - 0.5) - 0.02);
       glColor3f(1 - col, 1 - col / 2, col);
@@ -1723,4 +2137,6 @@ void GLView::drawCell(int x, int y, float quantity) {
   }
 }
 
-void GLView::setWorld(Evolve::World *w) { _world = w; }
+void GLView::setWorld(Evolve::World *w) {
+  _world = w;
+}
