@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.5)
 project(Evolve)
 #########################################################
 # FIND GLUT
@@ -22,8 +22,8 @@ if(NOT OPENGL_FOUND)
 endif(NOT OPENGL_FOUND)
 
 set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_FLAGS "-g -W -Wall")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -L./lib/ -lGL -lGLU -lglut -lglui")
+set(CMAKE_CXX_FLAGS "-g -W -Wall -Wl,--no-as-needed")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L./lib/ -lGLU -lGL -fopenmp -lglut -lglui")
 
 include_directories(include)
 

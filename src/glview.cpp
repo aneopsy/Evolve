@@ -81,8 +81,8 @@ GLView::GLView(Evolve::World *w) :
         _lastUpdate(0),
         _mousedrag(false) {
 
-  _translate = Vector2f();
-  _scalemult = 0.02;
+  _translate = Vector2f(- conf::WIDTH / 2, - conf::HEIGHT / 2);
+  _scalemult = 0.1;
   _downb[0] = 0;
   _downb[1] = 0;
   _downb[2] = 0;
@@ -230,14 +230,14 @@ void GLView::menu(int key) {
     if (_live.selection != Select::OLDEST)
       _live.selection = Select::OLDEST; //select oldest unit
     else _live.selection = Select::NONE;
-  } else if (key == 'q') {
+  } else if (key == 'x') {
     //zoom and translocate to instantly see the whole world
-    float scaleA = (float) glutGet(GLUT_WINDOW_WIDTH) / (conf::WIDTH + 2200);
-    float scaleB = (float) glutGet(GLUT_WINDOW_HEIGHT) / (conf::HEIGHT + 150);
+    float scaleA = (float) glutGet(GLUT_WINDOW_WIDTH) / (conf::WIDTH);
+    float scaleB = (float) glutGet(GLUT_WINDOW_HEIGHT) / (conf::HEIGHT);
     if (scaleA > scaleB) _scalemult = scaleB;
     else _scalemult = scaleA;
-    _translate.x = -(conf::WIDTH - 2020) / 2;
-    _translate.y = -(conf::HEIGHT - 80) / 2;
+    _translate.x = -(conf::WIDTH) / 2;
+    _translate.y = -(conf::HEIGHT) / 2;
     _live.follow = 0;
   } else if (key == 'g') {
     if (_live.selection != Select::BEST_GEN)

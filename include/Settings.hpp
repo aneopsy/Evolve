@@ -129,8 +129,8 @@ namespace conf {
 
     //DEFAULTS: All of what follows are defaults, and if settings.cfg exists, are subsituted with that file's values
     //SIM ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SIM
-    const int WIDTH   = 10000;  //width and height of simulation
-    const int HEIGHT  = 8000;
+    const int WIDTH   = 11000;  //width and height of simulation
+    const int HEIGHT  = 7000;
     const int WWIDTH  = 1100;  //initial window width and height
     const int WHEIGHT = 700;
 
@@ -142,9 +142,9 @@ namespace conf {
     const int   EVENTS_HALFLIFE = 300; //half-life (exact) for display of event messages.
 
     const int   CZ               = 50; //cell size in pixels, for food squares. Should divide well into Width, Height
-    const int   MINFOOD          = 2000; //(.cfg)
-    const float INITFOODDENSITY  = 0.00010; //(.cfg)
-    const float INITFRUITDENSITY = 0.00006; //(.cfg)
+    const int   MINFOOD          = 200; //(.cfg)
+    const float INITFOODDENSITY  = 0.000010; //(.cfg)
+    const float INITFRUITDENSITY = 0.000006; //(.cfg)
     const int   NUMBOTS          = 30; //(.cfg)
     const int   ENOUGHBOTS       = 500; //(.cfg)
     const int   TOOMANYBOTS      = 1800; //(.cfg)
