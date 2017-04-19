@@ -81,7 +81,7 @@ GLView::GLView(Evolve::World *w) :
         _lastUpdate(0),
         _mousedrag(false) {
 
-  _translate = Vector2f(- conf::WIDTH / 2, - conf::HEIGHT / 2);
+  _translate = Vector2f(-conf::WIDTH / 2, -conf::HEIGHT / 2);
   _scalemult = 0.1;
   _downb[0] = 0;
   _downb[1] = 0;
@@ -615,9 +615,16 @@ void GLView::renderProfile() {
     glBegin(GL_QUADS);
     glColor4f(1, 0.5, 0.5, 1);
     glVertex3f(10, 245, 0);
-    glVertex3f(10, wh - 10, 0);
-    glVertex3f(ww - 10, wh - 10, 0);
+    glVertex3f(10, wh - 200, 0);
+    glVertex3f(ww - 10, wh - 200, 0);
     glVertex3f(ww - 10, 245, 0);
+
+    glBegin(GL_QUADS);
+    glColor4f(0.23, 0.25, 0.3, 1);
+    glVertex3f(10, wh-195, 0);
+    glVertex3f(10, wh-10, 0);
+    glVertex3f(ww - 10, wh-10, 0);
+    glVertex3f(ww - 10, wh-195, 0);
 
     glColor4f(0.10, 0.113, 0.137, 1);
     glVertex3f(175, 95, 0);
@@ -840,114 +847,128 @@ void GLView::renderProfile() {
                  _buf, 0.8f, 1.0f, 1.0f);
 
 
-    glBegin(GL_QUADS);
-    float    col;
-    float    yy           = 15;
-    float    xx           = 15;
-    float    ss           = 16;
-    float    offx         = 0;
-    for (int j            = 0; j < Input::INPUT_SIZE; j++) {
-      col = selected.in[j];
-      if (j == Input::TEMP)
-        glColor3f(col, (2 - col) / 2, (1 - col));
-      glColor3f(col, col, col);
-      glVertex3f(15, 250 + ss * j, 0.0f);
-      glVertex3f(15, 250 + xx + ss * j, 0.0f);
-      glVertex3f(15 + yy, 250 + xx + ss * j, 0.0f);
-      glVertex3f(15 + yy, 250 + ss * j, 0.0f);
-      glEnd();
-      if (j == Input::CLOCK1 || j == Input::CLOCK2 || j == Input::CLOCK3) {
-        RenderString(8 + yy * 2 / 3, 257 + xx / 3 + ss * j,
-                     GLUT_BITMAP_HELVETICA_12,
-                     "Q", 0.0f, 0.0f, 0.0f);
-      } else if (j == Input::TEMP) {
-        RenderString(8 + yy * 2 / 3, 257 + xx / 3 + ss * j,
-                     GLUT_BITMAP_HELVETICA_12,
-                     "T", 0.8f, 0.5f, 0.0f);
-      } else if (j == Input::HEARING1 || j == Input::HEARING2) {
-        RenderString(8 + yy * 2 / 3, 257 + xx / 3 + ss * j,
-                     GLUT_BITMAP_HELVETICA_12,
-                     "E", 1.0f, 1.0f, 1.0f);
-      }
-      glBegin(GL_QUADS);
-    }
-    yy += 5;
-    for (int j = 0; j < Output::OUTPUT_SIZE; j++) {
-      col = selected.out[j];
-      if (j == Output::RED)
-        glColor3f(col, 0, 0);
-      else if (j == Output::GRE)
-        glColor3f(0, col, 0);
-      else if (j == Output::BLU)
-        glColor3f(0, 0, col);
-      else if (j == Output::JUMP)
-        glColor3f(col, col, 0);
-      else if (j == Output::GRAB)
-        glColor3f(0, col, col);
-      else if (j == Output::TONE)
-        glColor3f((1 - col) * (1 - col), 1 - fabs(col - 0.5) * 2, col * col);
-      else glColor3f(col, col, col);
-      glVertex3f(ww - yy * 2, 250 + ss * j, 0.0f);
-      glVertex3f(ww - yy * 2, 250 + xx + ss * j, 0.0f);
-      glVertex3f(ww - yy * 2 + ss, 250 + xx + ss * j, 0.0f);
-      glVertex3f(ww - yy * 2 + ss, 250 + ss * j, 0.0f);
-      glEnd();
-      if (j == Output::LEFT_WHEEL_B || j == Output::LEFT_WHEEL_F ||
-          j == Output::RIGHT_WHEEL_B || j == Output::RIGHT_WHEEL_F) {
-        RenderString(ww - yy - 15, 255 + xx / 3 + ss * j,
-                     GLUT_BITMAP_HELVETICA_12, "!", 0.0f, 1.0f, 0.0f);
-      } else if (j == Output::VOLUME) {
-        RenderString(ww - yy - 15, 255 + xx / 3 + ss * j,
-                     GLUT_BITMAP_HELVETICA_12, "V", 1.0f, 1.0f, 1.0f);
-      } else if (j == Output::CLOCKF3) {
-        RenderString(ww - yy - 15, 255 + xx / 3 + ss * j,
-                     GLUT_BITMAP_HELVETICA_12, "Q", 0.0f, 0.0f, 0.0f);
-      } else if (j == Output::SPIKE) {
-        RenderString(ww - yy - 15, 255 + xx / 3 + ss * j,
-                     GLUT_BITMAP_HELVETICA_12, "S", 1.0f, 0.0f, 0.0f);
-      } else if (j == Output::PROJECT) {
-        RenderString(ww - yy - 15, 255 + xx / 3 + ss * j,
-                     GLUT_BITMAP_HELVETICA_12, "P", 0.5f, 0.0f, 0.5f);
-      } else if (j == Output::JAW) {
-        RenderString(ww - yy - 15, 255 + xx / 3 + ss * j,
-                     GLUT_BITMAP_HELVETICA_12, ">", 1.0f, 1.0f, 0.0f);
-      } else if (j == Output::GIVE) {
-        RenderString(ww - yy - 15, 255 + xx / 3 + ss * j,
-                     GLUT_BITMAP_HELVETICA_12, "G", 0.0f, 0.3f, 0.0f);
-      } else if (j == Output::GRAB) {
-        RenderString(ww - yy - 15, 255 + xx / 3 + ss * j,
-                     GLUT_BITMAP_HELVETICA_12, "G", 0.0f, 0.6f, 0.6f);
-      }
-      glBegin(GL_QUADS);
+//    glBegin(GL_QUADS);
+    float col;
+    float yy              = 15;
+    float xx              = 15;
+    float ss              = 16;
+    float offx            = 0;
 
-    }
-    glEnd();
-    glBegin(GL_QUADS);
-    offx = 0;
-    yy   = 30;
-    xx   = 15;
-    ss   = 16;
-    for (int j = 0; j < selected.brain._neurons.size(); j++) {
+    yy = 15;
+    xx = 15;
+    ss = 16;
+    for (int j = 0; j < conf::BRAINSIZE; j++) {
       col = selected.brain._neurons[j].out;
-      glColor3f(col, col, col);
+      for (int k = 0; k < CONNS; k++) {
+        glBegin(GL_LINES);
+        int j2 = selected.brain._neurons[j].id[k];
 
-      glVertex3f(50 + yy, 250 + offx + ss * j, 0.0f);
-      glVertex3f(50 + yy, 250 + offx + xx + ss * j, 0.0f);
-      glVertex3f(50 + yy + ss, 250 + offx + xx + ss * j, 0.0f);
-      glVertex3f(50 + yy + ss, 250 + offx + ss * j, 0.0f);
+        float x1 = 0;
+        float y1 = 0;
+        if (j < Input::INPUT_SIZE) {
+          y1 = j * ss;
+          x1 = ss;
+        } else if (j >= (conf::BRAINSIZE - Output::OUTPUT_SIZE)-1) {
+          y1 = ((j - (conf::BRAINSIZE - Output::OUTPUT_SIZE)) + 1) * ss;
+          x1 = ww - xx * 3;
+        } else {
+          y1 = (((j - Input::INPUT_SIZE) % 30) + 1) * ss;
+          x1 = yy + ss + 5 * ss * (((j - Input::INPUT_SIZE) / 30) + 1);
+        }
 
-      if ((j + 1) % 15 == 0) {
-        yy += ss * 2;
-        offx -= ss * 15;
+        float x2 = 0;
+        float y2 = 0;
+        if (j2 < Input::INPUT_SIZE) {
+          y2 = j2 * ss;
+          x2 = ss;
+        } else if (j2 > conf::BRAINSIZE - Output::OUTPUT_SIZE-1) {
+          y2 = ((j2 - (conf::BRAINSIZE - Output::OUTPUT_SIZE)) + 1) * ss;
+          x2 = ww - xx * 3;
+        } else {
+          y2 = (((j2 - Input::INPUT_SIZE) % 30) + 1) * ss;
+          x2 = yy + ss + 5 * ss * (((j2 - Input::INPUT_SIZE) / 30) + 1);
+        }
+
+        float ww = selected.brain._neurons[j].w[k];
+        if (ww < 0)
+          glColor3f(-ww, 0, 0);
+        else
+          glColor3f(ww, ww, ww);
+
+        glVertex3f(x1 + xx / 2, 250 + yy / 2 + y1, 0);
+        glVertex3f(x2 + xx / 2, 250 + yy / 2 + y2, 0);
+        glEnd();
+
+        glBegin(GL_QUADS);
+        if (j+1 == (conf::BRAINSIZE - Output::RED))
+          glColor3f(col, 0, 0);
+        else if (j+1 == (conf::BRAINSIZE - Output::GRE))
+          glColor3f(0, col, 0);
+        else if (j+1 == (conf::BRAINSIZE - Output::BLU))
+          glColor3f(0, 0, col);
+        else if (j+1 == (conf::BRAINSIZE - Output::JUMP))
+          glColor3f(col, col, 0);
+        else if (j+1 == (conf::BRAINSIZE - Output::GRAB))
+          glColor3f(0, col, col);
+        else if (j+1 == (conf::BRAINSIZE - Output::TONE))
+          glColor3f((1 - col) * (1 - col), 1 - fabs(col - 0.5) * 2, col * col);
+        else
+          glColor3f(col, col, col);
+
+        glVertex3f(x1, 250 + y1, 0);
+        glVertex3f(x1, 250 + xx + y1, 0);
+        glVertex3f(x1 + yy, 250 + xx + y1, 0);
+        glVertex3f(x1 + yy, 250 + y1, 0);
+        glEnd();
+        if (j+1 == (conf::BRAINSIZE - Output::LEFT_WHEEL_B) || j+1 == (conf::BRAINSIZE - Output::LEFT_WHEEL_F) ||
+            j+1 == (conf::BRAINSIZE - Output::RIGHT_WHEEL_B) || j+1 == (conf::BRAINSIZE - Output::RIGHT_WHEEL_F)) {
+          RenderString(x1+xx*1.5, 250 + y1+yy,
+                       GLUT_BITMAP_HELVETICA_12, "!", 1.0f, 1.0f, 1.0f);
+        } else if (j+1 == (conf::BRAINSIZE - Output::VOLUME)) {
+          RenderString(x1+xx*1.5, 250 + y1+yy,
+                       GLUT_BITMAP_HELVETICA_12, "V", 1.0f, 1.0f, 1.0f);
+        } else if (j+1 == (conf::BRAINSIZE - Output::CLOCKF3)) {
+          RenderString(x1+xx*1.5, 250 + y1+yy,
+                       GLUT_BITMAP_HELVETICA_12, "Q", 0.0f, 0.0f, 0.0f);
+        } else if (j+1 == (conf::BRAINSIZE - Output::SPIKE)) {
+          RenderString(x1+xx*1.5, 250 + y1+yy,
+                       GLUT_BITMAP_HELVETICA_12, "S", 1.0f, 0.0f, 0.0f);
+        } else if (j+1 == (conf::BRAINSIZE - Output::PROJECT)) {
+          RenderString(x1+xx*1.5, 250 + y1+yy,
+                       GLUT_BITMAP_HELVETICA_12, "P", 0.5f, 0.0f, 0.5f);
+        } else if (j+1 == (conf::BRAINSIZE - Output::JAW)) {
+          RenderString(x1+xx*1.5, 250 + y1+yy,
+                       GLUT_BITMAP_HELVETICA_12, ">", 1.0f, 1.0f, 0.0f);
+        } else if (j+1 == (conf::BRAINSIZE - Output::GIVE)) {
+          RenderString(x1+xx*1.5, 250 + y1+yy,
+                       GLUT_BITMAP_HELVETICA_12, "G", 0.0f, 0.3f, 0.0f);
+        } else if (j+1 == (conf::BRAINSIZE - Output::GRAB)) {
+          RenderString(x1+xx*1.5, 250 + y1+yy,
+                       GLUT_BITMAP_HELVETICA_12, "G", 0.0f, 0.6f, 0.6f);
+        }
       }
     }
+
+    glEnd();
+    glBegin(GL_LINES);
+    glColor3f(1, 1, 1);
+    glVertex3f(75, wh - 140, 0);
+    glVertex3f(ww - 30, wh - 140, 0);
+    glVertex3f(50 + (ww - 15 - 50) / 2, wh - 100, 0);
+    glVertex3f(50 + (ww - 15 - 50) / 2, wh - 180, 0);
+
+    glVertex3f(75, wh - 100, 0);
+    glVertex3f(75, wh - 180, 0);
+
+    glVertex3f(ww - 30, wh - 100, 0);
+    glVertex3f(ww - 30, wh - 180, 0);
     glEnd();
 
     //SOUND
     glBegin(GL_QUADS);
     glColor4f(0.10, 0.113, 0.137, 1);
-    glVertex3f(50, wh - 15, 0);
-    glVertex3f(50, wh - 95, 0);
+    glVertex3f(15, wh - 15, 0);
+    glVertex3f(15, wh - 95, 0);
     glVertex3f(ww - 15, wh - 95, 0);
     glVertex3f(ww - 15, wh - 15, 0);
 
@@ -1013,8 +1034,8 @@ void GLView::renderProfile() {
     //eyesight profile. Draw a box with colored disks
     glBegin(GL_QUADS);
     glColor4f(0.10, 0.113, 0.137, 1);
-    glVertex3f(50, wh - 180, 0);
-    glVertex3f(50, wh - 100, 0);
+    glVertex3f(15, wh - 180, 0);
+    glVertex3f(15, wh - 100, 0);
     glVertex3f(ww - 15, wh - 100, 0);
     glVertex3f(ww - 15, wh - 180, 0);
     glEnd();
@@ -1025,59 +1046,10 @@ void GLView::renderProfile() {
                 selected.in[Input::EYES + 1 + q * 3],
                 selected.in[Input::EYES + 2 + q * 3]);
       Forms::drawCircle(
-              Vector2d(75 + selected.eyedir[q] / 2 / M_PI * 445, wh - 140),
+              Vector2d(30 + selected.eyedir[q] / 2 / M_PI * 470, wh - 140),
               selected.eyefov[q] / M_PI * 30);
       glEnd();
     }
-
-    glBegin(GL_LINES);
-    glColor3f(1, 1, 1);
-    glVertex3f(75, wh - 140, 0);
-    glVertex3f(ww - 30, wh - 140, 0);
-    glVertex3f(50 + (ww - 15 - 50) / 2, wh - 100, 0);
-    glVertex3f(50 + (ww - 15 - 50) / 2, wh - 180, 0);
-
-    glVertex3f(75, wh - 100, 0);
-    glVertex3f(75, wh - 180, 0);
-
-    glVertex3f(ww - 30, wh - 100, 0);
-    glVertex3f(ww - 30, wh - 180, 0);
-
-    glEnd();
-      glBegin(GL_LINES);
-      for (int j    = 0; j < conf::BRAINSIZE; j++) {
-        for (int k = 0; k < CONNS; k++) {
-          int j2 = selected.brain._neurons[j].id[k];
-
-          float x1 = 0;
-          float y1 = 0;
-          if (j < Input::INPUT_SIZE) {
-            y1 = j * ss;
-            x1 = yy;
-          } else {
-            y1 = ((j - Input::INPUT_SIZE) % 30) * ss;
-            x1 = yy + ss + 2 * ss * ((int) (j - Input::INPUT_SIZE) / 30);
-          }
-
-          float x2 = 0;
-          float y2 = 0;
-          if (j2 < Input::INPUT_SIZE) {
-            y2 = j2 * ss;
-            x2 = yy;
-          } else {
-            y2 = ((j2 - Input::INPUT_SIZE) % 30) * ss;
-            x2 = yy + ss + 2 * ss * ((int) (j2 - Input::INPUT_SIZE) / 30);
-          }
-
-          float ww = selected.brain._neurons[j].w[k];
-          if (ww < 0) glColor3f(-ww, 0, 0);
-          else glColor3f(0, 0, ww);
-
-          glVertex3f(x1, y1, 0);
-          glVertex3f(x2, y2, 0);
-        }
-    }
-    glEnd();
   }
 
   glPopMatrix();
@@ -1378,11 +1350,9 @@ void GLView::drawUnit(const Evolve::Unit &unit, float x, float y, bool ghost) {
       glEnd();
     }
 
-    float tra = unit.health == 0 ? 0.4
-                                 : 1; //mult for dead units, displayed with more transparent parts
+    float tra = unit.health == 0 ? 0.4 : 1;
 
-    if (_scalemult > .1 ||
-        ghost) { //dont render eyes, ears, or boost if zoomed too far out, but always render them on ghosts
+    if (_scalemult > .1 || ghost) {
       //draw eyes
       for (int q = 0; q < NUMEYES; q++) {
         glBegin(GL_LINES);
@@ -1560,12 +1530,12 @@ glLineWidth(2);
 
       glBegin(GL_POLYGON);
       glColor3f(0, 1, 0);
-      Forms::drawCircle(Vector2d(x+unit.radius / 2 * cos(wheelangle),
+      Forms::drawCircle(Vector2d(x + unit.radius / 2 * cos(wheelangle),
                                  y + unit.radius / 2 * sin(wheelangle)), 1);
       glEnd();
       wheelangle += M_PI;
       glBegin(GL_POLYGON);
-      Forms::drawCircle(Vector2d(x+unit.radius / 2 * cos(wheelangle),
+      Forms::drawCircle(Vector2d(x + unit.radius / 2 * cos(wheelangle),
                                  y + unit.radius / 2 * sin(wheelangle)), 1);
       glEnd();
     }
@@ -1573,7 +1543,6 @@ glLineWidth(2);
     if (!ghost) {
 
       if (_scalemult > .3) {//hide extra visual data if really far away
-
         //debug stuff
         if (_world->isDebug()) {
           //debug sight lines: connect to anything selected unit sees
@@ -1619,112 +1588,7 @@ glLineWidth(2);
             glEnd();
           }
         }
-
-        //tags: quick HUD of basic bot traits/stats
-        int xo      = 8 + unit.radius;
-        int yo      = -21;
-        int sep     = 2;
-        int le      = 9;
-        int wid     = 5;
-        int numtags = 8;
-
-        //health
-        glBegin(GL_QUADS);
-        glColor3f(0, 0, 0);
-        glVertex3f(x + xo, y + yo, 0);
-        glVertex3f(x + xo + 5, y + yo, 0);
-        glVertex3f(x + xo + 5, y + yo + 42, 0);
-        glVertex3f(x + xo, y + yo + 42, 0);
-
-        glColor3f(0, 0.8, 0);
-        glVertex3f(x + xo, y + yo + 21 * (2 - unit.health), 0);
-        glVertex3f(x + xo + 5, y + yo + 21 * (2 - unit.health), 0);
-        glVertex3f(x + xo + 5, y + yo + 42, 0);
-        glVertex3f(x + xo, y + yo + 42, 0);
-
-        //repcounter/energy
-        xo += 7;
-        glBegin(GL_QUADS);
-        glColor3f(0, 0, 0);
-        glVertex3f(x + xo, y + yo, 0);
-        glVertex3f(x + xo + 5, y + yo, 0);
-        glVertex3f(x + xo + 5, y + yo + 42, 0);
-        glVertex3f(x + xo, y + yo + 42, 0);
-
-        glColor3f(0, 0.7, 0.7);
-        glVertex3f(x + xo, y + yo + 42 * cap(unit.repcounter / _world->REPRATE),
-                   0);
-        glVertex3f(x + xo + 5,
-                   y + yo + 42 * cap(unit.repcounter / _world->REPRATE), 0);
-        glVertex3f(x + xo + 5, y + yo + 42, 0);
-        glVertex3f(x + xo, y + yo + 42, 0);
-
-        //indicator tags
-        xo += 7 + sep;
-        for (int i = 0; i < numtags; i++) {
-          int xmult = (int) floor((float) (i / 4));
-          int ymult = i % 4;
-
-          //different tag color schemes go here
-          if (i == 0) {
-            if (unit.hybrid) glColor3f(0, 0, 0.8); //hybrid?
-            else if (unit.sexproject) glColor4f(0, 0.8, 0.8, 0.5);
-            else continue;
-          } else if (i == 1)
-            glColor3f(stomach_red, stomach_gre, 0); //stomach type
-          else if (i == 2)
-            glColor3f(unit.volume, unit.volume,
-                      unit.volume); //sound volume emitted
-          else if (i == 3)
-            glColor3f(discomfort, (2 - discomfort) / 2,
-                      (1 - discomfort)); //temp discomfort
-          else if (i == 4)
-            glColor3f(lung.getRed(), lung.getGreen(),
-                      lung.getBlue()); //land/water lungs requirement
-          else if (i == 7)
-            glColor3f(metab.getRed(), metab.getGreen(), metab.getBlue()); //metabolism
-          else if (i == 5) { //ear 1 volume value heard
-            float hear = unit.in[Input::HEARING1];
-            if (hear == 0) continue;
-            else glColor3f(hear, hear, hear); //! =D
-          } else if (i == 6) { //ear 2 volume value heard
-            float hear = unit.in[Input::HEARING2];
-            if (hear == 0) continue;
-            else glColor3f(hear, hear, hear);
-          }
-
-          glVertex3f(x + xo + (wid + sep) * xmult, y + yo + (le + sep) * ymult,
-                     0);
-          glVertex3f(x + xo + (wid + sep) * xmult + wid,
-                     y + yo + (le + sep) * ymult, 0);
-          glVertex3f(x + xo + (wid + sep) * xmult + wid,
-                     y + yo + (le + sep) * ymult + le, 0);
-          glVertex3f(x + xo + (wid + sep) * xmult,
-                     y + yo + (le + sep) * ymult + le, 0);
-        }
         glEnd();
-      }
-
-      if (_scalemult > .5) { // hide the number stats when zoomed out
-        //generation count
-        sprintf(_buf2, "%i", unit.gencount);
-        RenderString(x - rp * 1.414, y - rp * 1.414, GLUT_BITMAP_HELVETICA_12,
-                     _buf2, 0.8f, 1.0f, 1.0f);
-
-        //age
-        sprintf(_buf2, "%i", unit.age);
-        float red = _world->HEALTHLOSS_AGING == 0 ? 0 : cap(
-                (float) unit.age / _world->MAXAGE);
-        //will be redder the closer it is to MAXAGE if health loss by aging is enabled
-        RenderString(x - rp * 1.414, y - rp * 1.414 - 12,
-                     GLUT_BITMAP_HELVETICA_12, _buf2, 0.8f, 1.0 - red,
-                     1.0 - red);
-
-        //species id
-        sprintf(_buf2, "%i", unit.species);
-        RenderString(x - rp * 1.414, y - rp * 1.414 - 24,
-                     GLUT_BITMAP_HELVETICA_12, _buf2, species.getRed(), species.getGreen(),
-                     species.getBlue());
       }
     }
   }
