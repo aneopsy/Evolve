@@ -57,51 +57,62 @@ DRAWS::Brain                &DRAWS::Brain::operator=(const DRAWS::Brain &other) 
 }
 
 void                        DRAWS::Brain::tick(std::vector<float> &in, std::vector<float> &out) {
-    for (int j = 0; j < (int) _neurons.size(); j++) {
-        Neuron *abox = &_neurons[j];
+    for (int j=0; j<(int)_neurons.size(); j++){
+      DRAWS::Neuron* abox= &_neurons[j];
 
-        if (j < _brain.inputsize) {
-            abox->out = in[j];
-        } else {
-            float acc = abox->bias;
+      if (j<Input::INPUT_SIZE) { //take first few boxes and set their out to in[]. (no need to do these separately, since thay are first)
+        abox->out= in[j];
+      } else { //then do a dynamics tick and set all targets
+        float acc=abox->bias;
 
-            for (int k = 0; k < CONNS; k++) {
-                int idx = abox->id[k];
-                int type = abox->type[k];
-                float val = _neurons[idx].out;
+        for (int k=0;k<CONNS;k++) {
+          int idx=abox->id[k];
+          int type = abox->type[k];
+          float val= _neurons[idx].out;
 
-                if (type == 2) {
-                    if (val > 0.5) {
-                        break;
-                    }
-                    continue;
-                }
-                if (type == 1) {
-                    val -= _neurons[idx].oldout;
-                    val *= 10;
-                }
-                acc += val * abox->w[k];
+          if(type==2){ //switch conn
+            if(val>0.5){
+              break;
+              continue;
             }
-            acc *= abox->gw;
-            acc = 1.0 / (1.0 + exp(-acc));
-            abox->target = cap(acc);
+            continue;
+          }
+
+          if(type==1){ //change sensitive conn
+            val-= _neurons[idx].oldout;
+            val*=10;
+          }
+
+          acc+= val*abox->w[k];
         }
+
+        acc*= abox->gw;
+
+        //put through sigmoid
+        acc= 1.0/(1.0+exp(-acc));
+
+        abox->target= cap(acc);
+      }
     }
 
 
-    for (int j = 0; j < (int) _neurons.size(); j++) {
-        Neuron *abox = &_neurons[j];
-        abox->oldout = abox->out;
-        if (j >= _brain.inputsize)
-            abox->out += (abox->target - abox->out) * abox->kp;
+    for (int j=0; j<(int)_neurons.size(); j++){
+      DRAWS::Neuron* abox= &_neurons[j];
+
+      //back up current out for each box
+      abox->oldout = abox->out;
+
+      //make all boxes go a bit toward target
+      if (j>=Input::INPUT_SIZE) abox->out+= (abox->target-abox->out)*abox->kp;
     }
 
-    for (int j = 0; j < _brain.outputsize; j++) {
-        if (j == Output::JUMP)
-            out[j] = cap(10 * (_neurons[_neurons.size() - 1 - j].out - _neurons[_neurons.size() - 1 - j].oldout));
-        else out[j] = _neurons[_neurons.size() - 1 - j].out;
+    //finally set out[] to the last few boxes output
+    for (int j=0;j<Output::OUTPUT_SIZE;j++) {
+      //jump has different responce because we've made it into a change sensitive output
+      if (j==Output::JUMP) out[j]= cap(10*(_neurons[_neurons.size()-1-j].out-_neurons[_neurons.size()-1-j].oldout));
+      else out[j]= _neurons[_neurons.size()-1-j].out;
     }
-}
+  }
 
 float DRAWS::Brain::getActivity() {
     float sum = 0;

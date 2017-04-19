@@ -411,17 +411,17 @@ void GLView::gluiCreateMenu() {
   new GLUI_Separator(rollout_vis);
   GLUI_RadioGroup *group_profiles = new GLUI_RadioGroup(rollout_vis,
                                                         &_live.profilevis);
-  new GLUI_StaticText(rollout_vis, "Selected");
-  for (int i = 0; i < Profile::PROFILES; i++) {
-    char text[16] = "";
-    if (i == Profile::NONE) strcpy(text, "off");
-    else if (i == Profile::BRAIN) strcpy(text, "Brain");
-    else if (i == Profile::EYES) strcpy(text, "Eyesight");
-    else if (i == Profile::INOUT) strcpy(text, "In's/Out's");
-    else if (i == Profile::SOUND) strcpy(text, "Sounds");
-
-    new GLUI_RadioButton(group_profiles, text);
-  }
+//  new GLUI_StaticText(rollout_vis, "Selected");
+//  for (int i = 0; i < Profile::PROFILES; i++) {
+//    char text[16] = "";
+//    if (i == Profile::NONE) strcpy(text, "off");
+//    else if (i == Profile::BRAIN) strcpy(text, "Brain");
+//    else if (i == Profile::EYES) strcpy(text, "Eyesight");
+//    else if (i == Profile::INOUT) strcpy(text, "In's/Out's");
+//    else if (i == Profile::SOUND) strcpy(text, "Sounds");
+//
+//    new GLUI_RadioButton(group_profiles, text);
+//  }
 
   _menu->add_column_to_panel(rollout_vis, true);
   GLUI_RadioGroup *group_units = new GLUI_RadioGroup(rollout_vis,
@@ -1289,6 +1289,7 @@ void GLView::drawUnit(const Evolve::Unit &unit, float x, float y, bool ghost) {
 
 
     //handle selected unit
+
     if (unit.id == _world->getSelection() && !ghost) {
       //draw selection
       glLineWidth(2);
@@ -1314,208 +1315,6 @@ void GLView::drawUnit(const Evolve::Unit &unit, float x, float y, bool ghost) {
         float yy = 15;
         float xx = 15;
         float ss = 16;
-
-        if (_live.profilevis == Profile::INOUT ||
-            _live.profilevis == Profile::BRAIN) {
-          //Draw inputs and outputs in in/out mode AND brain mode
-          glBegin(GL_QUADS);
-          for (int j = 0; j < Input::INPUT_SIZE; j++) {
-            col = unit.in[j];
-            if (j == Input::TEMP) glColor3f(col, (2 - col) / 2, (1 - col));
-            glColor3f(col, col, col);
-            glVertex3f(0 + ss * j, 0, 0.0f);
-            glVertex3f(xx + ss * j, 0, 0.0f);
-            glVertex3f(xx + ss * j, yy, 0.0f);
-            glVertex3f(0 + ss * j, yy, 0.0f);
-            if (_scalemult > .7) {
-              glEnd();
-              if (j == Input::CLOCK1 || j == Input::CLOCK2 ||
-                  j == Input::CLOCK3) {
-                RenderString(xx / 3 + ss * j, yy * 2 / 3,
-                             GLUT_BITMAP_HELVETICA_12, "Q", 0.0f, 0.0f, 0.0f);
-              } else if (j == Input::TEMP) {
-                RenderString(xx / 3 + ss * j, yy * 2 / 3,
-                             GLUT_BITMAP_HELVETICA_12, "T", 0.8f, 0.5f, 0.0f);
-              } else if (j == Input::HEARING1 || j == Input::HEARING2) {
-                RenderString(xx / 3 + ss * j, yy * 2 / 3,
-                             GLUT_BITMAP_HELVETICA_12, "E", 1.0f, 1.0f, 1.0f);
-              }
-              glBegin(GL_QUADS);
-            }
-          }
-          yy += 5;
-          for (int j = 0; j < Output::OUTPUT_SIZE; j++) {
-            col = unit.out[j];
-            if (j == Output::RED) glColor3f(col, 0, 0);
-            else if (j == Output::GRE) glColor3f(0, col, 0);
-            else if (j == Output::BLU) glColor3f(0, 0, col);
-            else if (j == Output::JUMP) glColor3f(col, col, 0);
-              //				else if (j==Output::GRAB) glColor3f(0,col,col);
-            else if (j == Output::TONE)
-              glColor3f((1 - col) * (1 - col), 1 - fabs(col - 0.5) * 2,
-                        col * col);
-            else glColor3f(col, col, col);
-            glVertex3f(0 + ss * j, yy, 0.0f);
-            glVertex3f(xx + ss * j, yy, 0.0f);
-            glVertex3f(xx + ss * j, yy + ss, 0.0f);
-            glVertex3f(0 + ss * j, yy + ss, 0.0f);
-            if (_scalemult > .7) {
-              glEnd();
-              if (j == Output::LEFT_WHEEL_B || j == Output::LEFT_WHEEL_F ||
-                  j == Output::RIGHT_WHEEL_B || j == Output::RIGHT_WHEEL_F) {
-                RenderString(xx / 3 + ss * j, yy + ss * 2 / 3,
-                             GLUT_BITMAP_HELVETICA_12, "!", 0.0f, 1.0f, 0.0f);
-              } else if (j == Output::VOLUME) {
-                RenderString(xx / 3 + ss * j, yy + ss * 2 / 3,
-                             GLUT_BITMAP_HELVETICA_12, "V", 1.0f, 1.0f, 1.0f);
-              } else if (j == Output::CLOCKF3) {
-                RenderString(xx / 3 + ss * j, yy + ss * 2 / 3,
-                             GLUT_BITMAP_HELVETICA_12, "Q", 0.0f, 0.0f, 0.0f);
-              } else if (j == Output::SPIKE) {
-                RenderString(xx / 3 + ss * j, yy + ss * 2 / 3,
-                             GLUT_BITMAP_HELVETICA_12, "S", 1.0f, 0.0f, 0.0f);
-              } else if (j == Output::PROJECT) {
-                RenderString(xx / 3 + ss * j, yy + ss * 2 / 3,
-                             GLUT_BITMAP_HELVETICA_12, "P", 0.5f, 0.0f, 0.5f);
-              } else if (j == Output::JAW) {
-                RenderString(xx / 3 + ss * j, yy + ss * 2 / 3,
-                             GLUT_BITMAP_HELVETICA_12, ">", 1.0f, 1.0f, 0.0f);
-              } else if (j == Output::GIVE) {
-                RenderString(xx / 3 + ss * j, yy + ss * 2 / 3,
-                             GLUT_BITMAP_HELVETICA_12, "G", 0.0f, 0.3f, 0.0f);
-              } else if (j == Output::GRAB) {
-                RenderString(xx / 3 + ss * j, yy + ss * 2 / 3,
-                             GLUT_BITMAP_HELVETICA_12, "G", 0.0f, 0.6f, 0.6f);
-              }
-              glBegin(GL_QUADS);
-            }
-
-          }
-          yy += ss * 2;
-          glEnd();
-        }
-
-        if (_live.profilevis == Profile::BRAIN) {
-          //draw brain in brain profile mode, complements the i/o as drawn above
-          glBegin(GL_QUADS);
-          float offx = 0;
-          ss = 8;
-          xx = ss;
-          for (int j = 0; j < unit.brain._neurons.size(); j++) {
-            col = unit.brain._neurons[j].out;
-            glColor3f(col, col, col);
-
-            glVertex3f(offx + 0 + ss * j, yy, 0.0f);
-            glVertex3f(offx + xx + ss * j, yy, 0.0f);
-            glVertex3f(offx + xx + ss * j, yy + ss, 0.0f);
-            glVertex3f(offx + ss * j, yy + ss, 0.0f);
-
-            if ((j + 1) % 30 == 0) {
-              yy += ss;
-              offx -= ss * 30;
-            }
-          }
-          glEnd();
-        } else if (_live.profilevis == Profile::EYES) {
-          //eyesight profile. Draw a box with colored disks
-          glBegin(GL_QUADS);
-          glColor3f(0, 0, 0.1);
-          glVertex3f(0, 0, 0);
-          glVertex3f(0, 20, 0);
-          glVertex3f(90, 20, 0);
-          glVertex3f(90, 0, 0);
-          glEnd();
-
-          for (int q = 0; q < NUMEYES; q++) {
-            glBegin(GL_POLYGON);
-            glColor3f(unit.in[Input::EYES + q * 3],
-                      unit.in[Input::EYES + 1 + q * 3],
-                      unit.in[Input::EYES + 2 + q * 3]);
-            Forms::drawCircle(Vector2d(15 + unit.eyedir[q] / 2 / M_PI * 60, 10),
-                              unit.eyefov[q] / M_PI * 10);
-            glEnd();
-          }
-
-          glBegin(GL_LINES);
-          glColor3f(0.5, 0.5, 0.5);
-          glVertex3f(0, 20, 0);
-          glVertex3f(90, 20, 0);
-          glVertex3f(90, 0, 0);
-          glVertex3f(0, 0, 0);
-
-          glColor3f(0.7, 0, 0);
-          glVertex3f(0, 0, 0);
-          glVertex3f(0, 20, 0);
-          glVertex3f(90, 20, 0);
-          glVertex3f(90, 0, 0);
-
-          glEnd();
-        } else if (_live.profilevis == Profile::SOUND) {
-          //sound profiler
-          glBegin(GL_QUADS);
-          glColor3f(0.1, 0.1, 0.1);
-          glVertex3f(0, 0, 0);
-          glVertex3f(0, 80, 0);
-          glVertex3f(180, 80, 0);
-          glVertex3f(180, 0, 0);
-
-          //each ear gets its hearing zone plotted
-          for (int q = 0; q < NUMEARS; q++) {
-            glColor4f(1 - (q / (NUMEARS - 1)), q / (NUMEARS - 1), 0,
-                      0.10 + 0.10 * (1 - q / (NUMEARS - 1)));
-            if (unit.hearlow[q] + _world->SOUNDPITCHRANGE * 2 <
-                unit.hearhigh[q]) {
-              glVertex3f(
-                      2 + 176 * cap(unit.hearlow[q] + _world->SOUNDPITCHRANGE),
-                      2, 0);
-              glVertex3f(
-                      2 + 176 * cap(unit.hearlow[q] + _world->SOUNDPITCHRANGE),
-                      78, 0);
-              glVertex3f(
-                      2 + 176 * cap(unit.hearhigh[q] - _world->SOUNDPITCHRANGE),
-                      78, 0);
-              glVertex3f(
-                      2 + 176 * cap(unit.hearhigh[q] - _world->SOUNDPITCHRANGE),
-                      2, 0);
-            }
-
-            glVertex3f(2 + 176 * unit.hearlow[q], 2, 0);
-            glVertex3f(2 + 176 * unit.hearlow[q], 78, 0);
-            glVertex3f(2 + 176 * unit.hearhigh[q], 78, 0);
-            glVertex3f(2 + 176 * unit.hearhigh[q], 2, 0);
-          }
-          glEnd();
-
-          glBegin(GL_LINES);
-          for (int e = 0; e < _world->selectedSounds.size(); e++) {
-            //unpackage each sound entry
-            float volume = (int) _world->selectedSounds[e];
-            float tone   = _world->selectedSounds[e] - volume;
-            volume /= 100;
-
-            float fiz = 1;
-            if (volume >= 1) volume = cap(volume - 1.0);
-            else fiz = 0.4;
-
-            if (tone == 0.25) glColor4f(0.0, 0.8, 0.0, fiz);
-            else glColor4f(0.7, 0.7, 0.7, fiz);
-
-            glVertex3f(2 + 176 * tone, 78, 0);
-            glVertex3f(2 + 176 * tone, 78 - 76 * volume, 0);
-          }
-          glEnd();
-
-          //now show our own sound, colored by tone
-          glLineWidth(2);
-          glBegin(GL_LINES);
-          glColor4f((1 - unit.tone) * (1 - unit.tone),
-                    1 - fabs(unit.tone - 0.5) * 2, unit.tone * unit.tone, 0.5);
-          glVertex3f(2 + 176 * unit.tone, 78, 0);
-          glVertex3f(2 + 176 * unit.tone, 78 - 76 * unit.volume, 0);
-          glEnd();
-          glLineWidth(1);
-
-        }
 
         glPopMatrix();
 
@@ -1564,17 +1363,16 @@ void GLView::drawUnit(const Evolve::Unit &unit, float x, float y, bool ghost) {
         }
       }
 
-      /*
-      //draw lines connecting connected brain boxes, but only in debug mode (NEEDS SIMPLIFICATION)
       if(_world->isDebug()){
           glEnd();
           glBegin(GL_LINES);
           float offx=0;
-          ss=30;
-          xx=ss;
-          for (int j=0;j<BRAINSIZE;j++) {
+          int ss=30;
+          int yy = ss;
+          int xx=ss;
+          for (int j=0;j<conf::BRAINSIZE;j++) {
               for(int k=0;k<CONNS;k++){
-                  int j2= unit.brain.boxes[j].id[k];
+                  int j2= unit.brain._neurons[j].id[k];
                   
                   //project indices j and j2 into pixel space
                   float x1= 0;
@@ -1593,7 +1391,7 @@ void GLView::drawUnit(const Evolve::Unit &unit, float x, float y, bool ghost) {
                       y2= yy+ss+2*ss*((int) (j2-Input::INPUT_SIZE)/30);
                   }
                   
-                  float ww= unit.brain.boxes[j].w[k];
+                  float ww= unit.brain._neurons[j].w[k];
                   if(ww<0) glColor3f(-ww, 0, 0);
                   else glColor3f(0,0,ww);
                   
@@ -1601,7 +1399,7 @@ void GLView::drawUnit(const Evolve::Unit &unit, float x, float y, bool ghost) {
                   glVertex3f(x2,y2,0);
               }
           }
-      }*/
+      }
     }
 
     //draw indicator of this unit... used for various events

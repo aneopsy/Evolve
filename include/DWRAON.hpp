@@ -30,9 +30,9 @@ namespace                       DWRAON {
         virtual Brain           &operator=(const Brain &other);
         void                    tick(std::vector<float> &in, std::vector<float> &out);
         float                   getActivity();
+        std::vector <Neuron>    _neurons;
 
     private:
-        std::vector <Neuron>    _neurons;
         t_brain                 _brain;
     };
 }

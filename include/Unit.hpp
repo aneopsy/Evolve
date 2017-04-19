@@ -15,6 +15,7 @@
 
 #include "Vector.hpp"
 #include "DRAWS.hpp"
+#include "DWRAON.hpp"
 #include "Settings.hpp"
 
 #include <vector>

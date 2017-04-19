@@ -849,7 +849,7 @@ void Evolve::World::update() {
 
   setInputs();
 
-//  brainsTick();
+  brainsTick();
 
 #pragma omp parallel for
   for (int i = 0; i < (int) units.size(); i++) {
@@ -1774,11 +1774,11 @@ void Evolve::World::addUnits(int num, int set_stomach, float nx, float ny,
   settings.nbneuron    = conf::BRAINSIZE;
   settings.inputsize   = Input::INPUT_SIZE;
   settings.outputsize  = Output::OUTPUT_SIZE;
-  settings.directinput = 0.1;
-  settings.deadconns   = 0.3;
-  settings.changeconn  = 0.15;
-  settings.memconn     = 0.01;
-  settings.learnrate   = 0.001;
+  settings.directinput = conf::BRAIN_DIRECTINPUT;
+  settings.deadconns   = conf::BRAIN_DEADCONNS;
+  settings.changeconn  = conf::BRAIN_CHANGECONNS;
+  settings.memconn     = conf::BRAIN_MEMCONN;
+  settings.learnrate   = conf::LEARNRATE;
   for (int i = 0; i < num; i++) {
     Unit a(settings, MEANRADIUS, REPRATE, MUTCHANCE, MUTSIZE);
 
