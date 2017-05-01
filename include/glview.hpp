@@ -20,6 +20,9 @@
 #include "World.hpp"
 #include "glui.h"
 #include "Forms.hpp"
+#include "Input.hpp"
+#include <map>
+#include <functional>
 
 class GLView;
 
@@ -101,27 +104,40 @@ public:
 private:
     void countdownEvents();
 
-    Evolve::World    *_world;
-    t_live           _live;
-    bool             _debug;
-    GLUI             *_menu;
-    GLUI_FileBrowser *_Browser;
-    std::string      _file_name;
-    GLUI             *_Loader;
-    GLUI             *_Saver;
-    GLUI             *_Alert;
-    GLUI_EditText    *_Filename;
-    char             _filename[30];
-    char             _buf[100];
-    char             _buf2[10];
-    int              _modcounter;
-    int              _lastUpdate;
-    int              _frames;
-    float            _scalemult;
-    int              _downb[7];
-    Vector2f         _translate;
-    Vector2d         _mouse;
-    bool             _mousedrag;
+    Evolve::World                             *_world;
+    t_live                                    _live;
+    bool                                      _debug;
+    GLUI                                      *_menu;
+    GLUI_FileBrowser                          *_Browser;
+    std::string                               _file_name;
+    GLUI                                      *_Loader;
+    GLUI                                      *_Saver;
+    GLUI                                      *_Alert;
+    GLUI_EditText                             *_Filename;
+    char                                      _filename[30];
+    char                                      _buf[100];
+    char                                      _buf2[10];
+    int                                       _modcounter;
+    int                                       _lastUpdate;
+    int                                       _frames;
+    float                                     _scalemult;
+    int                                       _downb[7];
+    Vector2f                                  _translate;
+    Vector2d                                  _mouse;
+    bool                                      _mousedrag;
+    std::map<char, std::function<void(void)>> _input;
+    //Keyboard
+    void keyQuit();
+    void keyPause();
+    void keyFast();
+    void keySkipUp();
+    void keySkipDown();
+    void keyPrevLayer();
+    void keyNextLayer();
+    void addUnits();
+    void addUnitsHerbi();
+    void addUnitsCarni();
+    void addUnitsFrugi();
 };
 
 #endif // GLVIEW_H

@@ -2,7 +2,6 @@
 
 #define NUMEYES 6
 #define NUMEARS 2
-#define CONNS 5
 
 #ifndef SETTINGS_H
 #define SETTINGS_H

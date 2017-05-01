@@ -15,7 +15,7 @@
 
 # include                   <vector>
 
-# define CONNS 3
+# define CONNS 5
 # define NUMEYES 6
 
 typedef struct              s_brain {

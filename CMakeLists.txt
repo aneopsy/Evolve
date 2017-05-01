@@ -35,6 +35,22 @@ SET(SRCS src/Main.cpp
         src/World.cpp
         src/Unit.cpp
         src/Forms.cpp
-        include/Color.hpp)
+
+        include/ANeuron.hpp
+        include/Color.hpp
+        include/DRAWS.hpp
+        include/DWRAON.hpp
+        include/Forms.hpp
+        include/glui.h
+        include/glview.hpp
+        include/IBrain.hpp
+        include/Input.hpp
+        include/IView.hpp
+        include/Settings.hpp
+        include/Unit.hpp
+        include/Utils.hpp
+        include/Vector.hpp
+        include/World.hpp
+        )
 
 add_executable(evolve "${SRCS}")

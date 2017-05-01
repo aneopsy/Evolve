@@ -13,6 +13,7 @@
 #include <Utils.hpp>
 #include <Settings.hpp>
 #include <Color.hpp>
+#include <functional>
 #include "glview.hpp"
 
 void gl_processNormalKeys(unsigned char key, int x, int y) {
@@ -91,6 +92,19 @@ GLView::GLView(Evolve::World *w) :
   _downb[5] = 0;
   _downb[6] = 0;
   _mouse = Vector2d();
+
+  //KeyBoard
+  _input[27]  = std::bind(&GLView::keyQuit, this);
+  _input['p'] = std::bind(&GLView::keyPause, this);
+  _input['l'] = std::bind(&GLView::keyFast, this);
+  _input[43]  = std::bind(&GLView::keySkipUp, this);
+  _input[45]  = std::bind(&GLView::keySkipDown, this);
+  _input['m'] = std::bind(&GLView::keyNextLayer, this);
+  _input['k'] = std::bind(&GLView::keyPrevLayer, this);
+  _input['n'] = std::bind(&GLView::addUnits, this);
+  _input['c'] = std::bind(&GLView::addUnitsCarni, this);
+  _input['v'] = std::bind(&GLView::addUnitsHerbi, this);
+  _input['b'] = std::bind(&GLView::addUnitsFrugi, this);
 }
 
 GLView::~GLView() {}
@@ -179,28 +193,41 @@ void GLView::processReleasedKeys(unsigned char key, int x, int y) {
   }
 }
 
+/*
+ * KeyBoard Manager
+ */
+void GLView::keyQuit() { exit(0); }
+
+void GLView::keyPause() { _live.paused = !_live.paused; }
+
+void GLView::keyFast() { _live.fastmode = !_live.fastmode; }
+
+void GLView::keySkipUp() { _live.skipdraw++; }
+
+void GLView::keySkipDown() { _live.skipdraw--; }
+
+void GLView::keyNextLayer() {
+  _live.layersvis++;
+  if (_live.layersvis > Evolve::Layer::LAYERS)
+    _live.layersvis = 0;
+}
+
+void GLView::keyPrevLayer() {
+  _live.layersvis--;
+  if (_live.layersvis < 0)
+    _live.layersvis = Evolve::Layer::LAYERS;
+}
+
+void GLView::addUnits() { _world->addUnits(5); }
+void GLView::addUnitsHerbi() { _world->addUnits(5, Stomach::PLANT); }
+void GLView::addUnitsCarni() { _world->addUnits(5, Stomach::MEAT); }
+void GLView::addUnitsFrugi() { _world->addUnits(5, Stomach::FRUIT); }
+
 void GLView::menu(int key) {
 //  ReadWrite* savehelper= new ReadWrite(); //for loading/saving
-  if (!key)
-    return;
-  if (key == 27) //[esc] quit
-    exit(0);
-  else if (key == 'p') { //Pause
-    _live.paused = !_live.paused;
-  } else if (key == 'l') { //Drawing
-    _live.fastmode = !_live.fastmode;
-  } else if (key == 43) { //+
-    _live.skipdraw++;
-  } else if (key == 45) { //-
-    _live.skipdraw--;
-  } else if (key == 'k' || key == 'm') { //layer switch
-    if (key == 'm') _live.layersvis++;
-    else _live.layersvis--;
-    if (_live.layersvis > Evolve::Layer::LAYERS)
-      _live.layersvis = 0;
-    if (_live.layersvis < 0)
-      _live.layersvis = Evolve::Layer::LAYERS;
-  } else if (key == 'a' || key == 'e') { //cell switch
+  if (_input.find(key) != _input.end())
+    _input[key]();
+  else if (key == 'a' || key == 'e') { //cell switch
     if (key == 'e')
       _live.unitsvis++;
     else
@@ -209,14 +236,6 @@ void GLView::menu(int key) {
     if (_live.unitsvis < Visual::NONE)
       _live.unitsvis =
               Visual::VISUALS - 1;
-  } else if (key == 1001) { //add units
-    _world->addUnits(5);
-  } else if (key == 1002) { //add Herbivore units
-    _world->addUnits(5, Stomach::PLANT);
-  } else if (key == 1003) { //add Carnivore units
-    _world->addUnits(5, Stomach::MEAT);
-  } else if (key == 1004) { //add Frugivore units
-    _world->addUnits(5, Stomach::FRUIT);
   } else if (key == 'c') {
     _world->setClosed(!_world->isClosed());
     _live.worldclosed = (int) _world->isClosed();
@@ -621,10 +640,10 @@ void GLView::renderProfile() {
 
     glBegin(GL_QUADS);
     glColor4f(0.23, 0.25, 0.3, 1);
-    glVertex3f(10, wh-195, 0);
-    glVertex3f(10, wh-10, 0);
-    glVertex3f(ww - 10, wh-10, 0);
-    glVertex3f(ww - 10, wh-195, 0);
+    glVertex3f(10, wh - 195, 0);
+    glVertex3f(10, wh - 10, 0);
+    glVertex3f(ww - 10, wh - 10, 0);
+    glVertex3f(ww - 10, wh - 195, 0);
 
     glColor4f(0.10, 0.113, 0.137, 1);
     glVertex3f(175, 95, 0);
@@ -868,7 +887,7 @@ void GLView::renderProfile() {
         if (j < Input::INPUT_SIZE) {
           y1 = j * ss;
           x1 = ss;
-        } else if (j >= (conf::BRAINSIZE - Output::OUTPUT_SIZE)-1) {
+        } else if (j >= (conf::BRAINSIZE - Output::OUTPUT_SIZE) - 1) {
           y1 = ((j - (conf::BRAINSIZE - Output::OUTPUT_SIZE)) + 1) * ss;
           x1 = ww - xx * 3;
         } else {
@@ -881,7 +900,7 @@ void GLView::renderProfile() {
         if (j2 < Input::INPUT_SIZE) {
           y2 = j2 * ss;
           x2 = ss;
-        } else if (j2 > conf::BRAINSIZE - Output::OUTPUT_SIZE-1) {
+        } else if (j2 > conf::BRAINSIZE - Output::OUTPUT_SIZE - 1) {
           y2 = ((j2 - (conf::BRAINSIZE - Output::OUTPUT_SIZE)) + 1) * ss;
           x2 = ww - xx * 3;
         } else {
@@ -900,17 +919,17 @@ void GLView::renderProfile() {
         glEnd();
 
         glBegin(GL_QUADS);
-        if (j+1 == (conf::BRAINSIZE - Output::RED))
+        if (j + 1 == (conf::BRAINSIZE - Output::RED))
           glColor3f(col, 0, 0);
-        else if (j+1 == (conf::BRAINSIZE - Output::GRE))
+        else if (j + 1 == (conf::BRAINSIZE - Output::GRE))
           glColor3f(0, col, 0);
-        else if (j+1 == (conf::BRAINSIZE - Output::BLU))
+        else if (j + 1 == (conf::BRAINSIZE - Output::BLU))
           glColor3f(0, 0, col);
-        else if (j+1 == (conf::BRAINSIZE - Output::JUMP))
+        else if (j + 1 == (conf::BRAINSIZE - Output::JUMP))
           glColor3f(col, col, 0);
-        else if (j+1 == (conf::BRAINSIZE - Output::GRAB))
+        else if (j + 1 == (conf::BRAINSIZE - Output::GRAB))
           glColor3f(0, col, col);
-        else if (j+1 == (conf::BRAINSIZE - Output::TONE))
+        else if (j + 1 == (conf::BRAINSIZE - Output::TONE))
           glColor3f((1 - col) * (1 - col), 1 - fabs(col - 0.5) * 2, col * col);
         else
           glColor3f(col, col, col);
@@ -920,30 +939,32 @@ void GLView::renderProfile() {
         glVertex3f(x1 + yy, 250 + xx + y1, 0);
         glVertex3f(x1 + yy, 250 + y1, 0);
         glEnd();
-        if (j+1 == (conf::BRAINSIZE - Output::LEFT_WHEEL_B) || j+1 == (conf::BRAINSIZE - Output::LEFT_WHEEL_F) ||
-            j+1 == (conf::BRAINSIZE - Output::RIGHT_WHEEL_B) || j+1 == (conf::BRAINSIZE - Output::RIGHT_WHEEL_F)) {
-          RenderString(x1+xx*1.5, 250 + y1+yy,
+        if (j + 1 == (conf::BRAINSIZE - Output::LEFT_WHEEL_B) ||
+            j + 1 == (conf::BRAINSIZE - Output::LEFT_WHEEL_F) ||
+            j + 1 == (conf::BRAINSIZE - Output::RIGHT_WHEEL_B) ||
+            j + 1 == (conf::BRAINSIZE - Output::RIGHT_WHEEL_F)) {
+          RenderString(x1 + xx * 1.5, 250 + y1 + yy,
                        GLUT_BITMAP_HELVETICA_12, "!", 1.0f, 1.0f, 1.0f);
-        } else if (j+1 == (conf::BRAINSIZE - Output::VOLUME)) {
-          RenderString(x1+xx*1.5, 250 + y1+yy,
+        } else if (j + 1 == (conf::BRAINSIZE - Output::VOLUME)) {
+          RenderString(x1 + xx * 1.5, 250 + y1 + yy,
                        GLUT_BITMAP_HELVETICA_12, "V", 1.0f, 1.0f, 1.0f);
-        } else if (j+1 == (conf::BRAINSIZE - Output::CLOCKF3)) {
-          RenderString(x1+xx*1.5, 250 + y1+yy,
+        } else if (j + 1 == (conf::BRAINSIZE - Output::CLOCKF3)) {
+          RenderString(x1 + xx * 1.5, 250 + y1 + yy,
                        GLUT_BITMAP_HELVETICA_12, "Q", 0.0f, 0.0f, 0.0f);
-        } else if (j+1 == (conf::BRAINSIZE - Output::SPIKE)) {
-          RenderString(x1+xx*1.5, 250 + y1+yy,
+        } else if (j + 1 == (conf::BRAINSIZE - Output::SPIKE)) {
+          RenderString(x1 + xx * 1.5, 250 + y1 + yy,
                        GLUT_BITMAP_HELVETICA_12, "S", 1.0f, 0.0f, 0.0f);
-        } else if (j+1 == (conf::BRAINSIZE - Output::PROJECT)) {
-          RenderString(x1+xx*1.5, 250 + y1+yy,
+        } else if (j + 1 == (conf::BRAINSIZE - Output::PROJECT)) {
+          RenderString(x1 + xx * 1.5, 250 + y1 + yy,
                        GLUT_BITMAP_HELVETICA_12, "P", 0.5f, 0.0f, 0.5f);
-        } else if (j+1 == (conf::BRAINSIZE - Output::JAW)) {
-          RenderString(x1+xx*1.5, 250 + y1+yy,
+        } else if (j + 1 == (conf::BRAINSIZE - Output::JAW)) {
+          RenderString(x1 + xx * 1.5, 250 + y1 + yy,
                        GLUT_BITMAP_HELVETICA_12, ">", 1.0f, 1.0f, 0.0f);
-        } else if (j+1 == (conf::BRAINSIZE - Output::GIVE)) {
-          RenderString(x1+xx*1.5, 250 + y1+yy,
+        } else if (j + 1 == (conf::BRAINSIZE - Output::GIVE)) {
+          RenderString(x1 + xx * 1.5, 250 + y1 + yy,
                        GLUT_BITMAP_HELVETICA_12, "G", 0.0f, 0.3f, 0.0f);
-        } else if (j+1 == (conf::BRAINSIZE - Output::GRAB)) {
-          RenderString(x1+xx*1.5, 250 + y1+yy,
+        } else if (j + 1 == (conf::BRAINSIZE - Output::GRAB)) {
+          RenderString(x1 + xx * 1.5, 250 + y1 + yy,
                        GLUT_BITMAP_HELVETICA_12, "G", 0.0f, 0.6f, 0.6f);
         }
       }
