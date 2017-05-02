@@ -1785,11 +1785,11 @@ void Evolve::World::addUnits(int num, int set_stomach, float nx, float ny,
     Unit a(settings, MEANRADIUS, REPRATE, MUTCHANCE, MUTSIZE);
 
     if (set_stomach == Stomach::PLANT)
-      a.setHerbivore(); //if told to predetermine stomach type
+      a.setHerbivore();
     else if (set_stomach == Stomach::MEAT) a.setCarnivore();
     else if (set_stomach == Stomach::FRUIT) a.setFrugivore();
 
-    if (set_lungs) { //if told to fix lungs for unit's position
+    if (set_lungs) {
       int scx = (int) a.pos.x / conf::CZ;
       int scy = (int) a.pos.y / conf::CZ;
       a.lungs = cap(randn((float) cells[Layer::LAND][scx][scy], 0.5));

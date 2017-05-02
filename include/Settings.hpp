@@ -126,14 +126,12 @@ namespace Stomach {
 
 namespace conf {
 
-    //DEFAULTS: All of what follows are defaults, and if settings.cfg exists, are subsituted with that file's values
-    //SIM ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SIM
-    const int WIDTH   = 11000;  //width and height of simulation
-    const int HEIGHT  = 7000;
-    const int WWIDTH  = 1100;  //initial window width and height
-    const int WHEIGHT = 700;
+    const int WIDTH   = 11000;  //width of simulation
+    const int HEIGHT  = 7000; //height of simulation
+    const int WWIDTH  = 1100;  //initial window width
+    const int WHEIGHT = 700; //initial window height
 
-    const float VERSION = 0.01; //current program version. IF ANY OF THESE VALUES ARE CHANGED, THIS SHOULD BE CHANGED AS WELL! ++0.01
+    const float VERSION = 0.01;
 
     const float SNAP_SPEED      = 0.2; //how fast snapping to an object of interest is; 1 is instant, 0.1 is smooth, 0 is pointless
     const float ZOOM_SPEED      = 0.002; //how fast zoom actions change the magnification
