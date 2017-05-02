@@ -169,9 +169,6 @@ Evolve::Unit Evolve::Unit::reproduce(Evolve::Unit that, float REPRATE) {
   Unit a2(this->brain.getBrain(), 0, REPRATE, MR, MR2);
 
 
-  //spawn the baby somewhere closeby behind the mother
-  //we want to spawn behind so that units dont accidentally kill their young right away
-  //note that this relies on bots actally driving forward, not backward. Well let natural selection choose who lives and who dies
   Vector2f fb(this->radius * 2.5, 0);
   fb.rotate(this->angle + M_PI + this->numbabies * randf(-0.4, 0.4));
   a2.pos = this->pos + fb;
@@ -220,11 +217,11 @@ Evolve::Unit Evolve::Unit::reproduce(Evolve::Unit that, float REPRATE) {
   if (randf(0, 1) < MR / 10)
     a2.numbabies = (int) (randn(a2.numbabies, MR2 * 40));
   if (a2.numbabies < 1)
-    a2.numbabies = 1; //technically, 0 babies is perfectly logical, but in this sim it is pointless, so it's disallowed
+    a2.numbabies = 1;
   if (randf(0, 1) < MR) a2.metabolism = cap(randn(a2.metabolism, MR2 * 3));
   if (randf(0, 1) < MR * 5)
     a2.stomach[Stomach::PLANT] = cap(
-            randn(a2.stomach[Stomach::PLANT], MR2 * 10)); //*15 was a bit big
+            randn(a2.stomach[Stomach::PLANT], MR2 * 10));
   if (randf(0, 1) < MR * 5)
     a2.stomach[Stomach::MEAT]  = cap(
             randn(a2.stomach[Stomach::MEAT], MR2 * 10));
@@ -292,17 +289,13 @@ Evolve::Unit Evolve::Unit::reproduce(Evolve::Unit that, float REPRATE) {
     if (randf(0, 1) < MR * 2) a2.eyedir[i] = randn(a2.eyedir[i], MR2 * 5);
     if (a2.eyedir[i] < 0) a2.eyedir[i]        = 0;
     if (a2.eyedir[i] > 2 * M_PI) a2.eyedir[i] = 2 * M_PI;
-    //not going to loop coordinates; 0,2pi is bots front again, so it provides a good point to "bounce" off of
   }
 
-  //create brain here
   a2.brain = this->brain.crossover(that.brain);
   a2.brain.initMutate(MR, MR2);
-
-  if (randf(0, 1) < MR * 2) a2.strength = cap(randn(a2.strength, MR2));
-
-  a2.initEvent(20, 0.8, 0.8,
-               0.8); //grey event means we were just born! Welcome!
+  if (randf(0, 1) < MR * 2)
+    a2.strength = cap(randn(a2.strength, MR2));
+  a2.initEvent(20, 0.8, 0.8, 0.8);
 
   return a2;
 }

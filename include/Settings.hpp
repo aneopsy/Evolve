@@ -159,7 +159,7 @@ namespace conf {
     const float SPIKEMULT    = 3; //(.cfg)
 
     //BOTS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ BOTS
-    const int   BRAINSIZE        = 150; //(.cfg)
+    const int   BRAINSIZE        = 200; //(.cfg)
     const float BOTSPEED         = 0.3; //(.cfg)
     const float BOOSTSIZEMULT    = 2; //(.cfg)
     const float SOUNDPITCHRANGE  = 0.1; //(.cfg)
