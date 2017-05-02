@@ -138,6 +138,9 @@ private:
     void addUnitsHerbi();
     void addUnitsCarni();
     void addUnitsFrugi();
+    void keyClose();
+    void keyFollow();
+    void keyRescale();
 };
 
 #endif // GLVIEW_H

@@ -105,6 +105,9 @@ GLView::GLView(Evolve::World *w) :
   _input['c'] = std::bind(&GLView::addUnitsCarni, this);
   _input['v'] = std::bind(&GLView::addUnitsHerbi, this);
   _input['b'] = std::bind(&GLView::addUnitsFrugi, this);
+  _input['f'] = std::bind(&GLView::keyFollow, this);
+  _input['x'] = std::bind(&GLView::keyRescale, this);
+  _input['w'] = std::bind(&GLView::keyClose, this);
 }
 
 GLView::~GLView() {}
@@ -222,6 +225,28 @@ void GLView::addUnits() { _world->addUnits(5); }
 void GLView::addUnitsHerbi() { _world->addUnits(5, Stomach::PLANT); }
 void GLView::addUnitsCarni() { _world->addUnits(5, Stomach::MEAT); }
 void GLView::addUnitsFrugi() { _world->addUnits(5, Stomach::FRUIT); }
+void GLView::keyClose() {
+  _world->setClosed(!_world->isClosed());
+  _live.worldclosed = (int) _world->isClosed();
+  glutGet(GLUT_MENU_NUM_ITEMS);
+  if (_world->isClosed())
+    glutChangeToMenuEntry(4, "Open World", 'c');
+  else
+    glutChangeToMenuEntry(4, "Close World", 'c');
+  glutSetMenu(m_id);
+}
+void GLView::keyFollow() { _live.follow = !_live.follow; }
+void GLView::keyRescale() {
+  float scaleA = (float) glutGet(GLUT_WINDOW_WIDTH) / (conf::WIDTH);
+  float scaleB = (float) glutGet(GLUT_WINDOW_HEIGHT) / (conf::HEIGHT);
+  if (scaleA > scaleB)
+    _scalemult = scaleB;
+  else
+    _scalemult = scaleA;
+  _translate.x = -(conf::WIDTH) / 2;
+  _translate.y = -(conf::HEIGHT) / 2;
+  _live.follow = 0;
+}
 
 void GLView::menu(int key) {
 //  ReadWrite* savehelper= new ReadWrite(); //for loading/saving
@@ -236,28 +261,10 @@ void GLView::menu(int key) {
     if (_live.unitsvis < Visual::NONE)
       _live.unitsvis =
               Visual::VISUALS - 1;
-  } else if (key == 'c') {
-    _world->setClosed(!_world->isClosed());
-    _live.worldclosed = (int) _world->isClosed();
-    glutGet(GLUT_MENU_NUM_ITEMS);
-    if (_world->isClosed()) glutChangeToMenuEntry(4, "Open World", 'c');
-    else glutChangeToMenuEntry(4, "Close World", 'c');
-    glutSetMenu(m_id);
-  } else if (key == 'f') {
-    _live.follow = !_live.follow; //toggle follow selected unit
   } else if (key == 'o') {
     if (_live.selection != Select::OLDEST)
-      _live.selection = Select::OLDEST; //select oldest unit
+      _live.selection = Select::OLDEST;
     else _live.selection = Select::NONE;
-  } else if (key == 'x') {
-    //zoom and translocate to instantly see the whole world
-    float scaleA = (float) glutGet(GLUT_WINDOW_WIDTH) / (conf::WIDTH);
-    float scaleB = (float) glutGet(GLUT_WINDOW_HEIGHT) / (conf::HEIGHT);
-    if (scaleA > scaleB) _scalemult = scaleB;
-    else _scalemult = scaleA;
-    _translate.x = -(conf::WIDTH) / 2;
-    _translate.y = -(conf::HEIGHT) / 2;
-    _live.follow = 0;
   } else if (key == 'g') {
     if (_live.selection != Select::BEST_GEN)
       _live.selection = Select::BEST_GEN; //select most advanced generation unit
