@@ -37,10 +37,10 @@ int main(int argc, char **argv) {
   glutInitWindowSize(550, 1000);
   GLVIEW->profileWin = glutCreateWindow("Profile");
 
-  glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
-  glutInitWindowPosition(0, conf::HEIGHT - 150);
-  glutInitWindowSize(1200, 150);
-  GLVIEW->statsWin = glutCreateWindow("Stats");
+  // glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
+  // glutInitWindowPosition(0, conf::HEIGHT - 150);
+  // glutInitWindowSize(1200, 150);
+  // GLVIEW->statsWin = glutCreateWindow("Stats");
 
   glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
   glutInitWindowPosition(250, 0);

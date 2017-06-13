@@ -523,8 +523,8 @@ void GLView::handleIdle() {
         renderScene();
         glutSetWindow(profileWin);
         renderProfile();
-        glutSetWindow(statsWin);
-        renderStats();
+        // glutSetWindow(statsWin);
+        // renderStats();
       }
     } else {
       clock_t endwait;
@@ -535,8 +535,8 @@ void GLView::handleIdle() {
       renderScene();
       glutSetWindow(profileWin);
       renderProfile();
-      glutSetWindow(statsWin);
-      renderStats();
+    //   glutSetWindow(statsWin);
+    //   renderStats();
     }
   } else {
     if (_live.selection == Select::RELATIVE)
@@ -1444,10 +1444,10 @@ void GLView::drawUnit(const Evolve::Unit &unit, float x, float y, bool ghost) {
 /* unit-unit directed grab vis code. Works but coords are wrong from World.cpp
 glLineWidth(2);
 				glBegin(GL_LINES);
-				
+
 				glColor4f(0.0,0.7,0.7,0.75);
 				glVertex3f(x,y,0);
-		
+
 				if(unit.grabID!=-1) glVertex3f(unit.grabx, unit.graby, 0);
 				else {
 					float aa= unit.angle+M_PI/8;
