@@ -146,7 +146,7 @@ void Evolve::World::reset() {
   }
 
   //open report file; null it up if it exists
-  FILE *fr = fopen("report.txt", "w");
+  FILE *fr = fopen("report.csv", "w");
   fclose(fr);
 
   ptr = 0;
@@ -1928,7 +1928,7 @@ void Evolve::World::writeReport() {
     }
   }
 
-  FILE *fr = fopen("report.txt", "a");
+  FILE *fr = fopen("report.csv", "a");
   //print basics: Epoch and Unit counts
   fprintf(fr,
           "Epoch:\t%i\t#Units:\t%i\t#Herbi:\t%i\t#Frugi:\t%i\t#Carni:\t%i\t#Terra:\t%i\t#Aqua:\t%i\t#Hybrids:\t%i\t#Spikes:\t%i\t",
