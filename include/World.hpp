@@ -44,6 +44,7 @@ namespace Evolve {
         int   dead;
         int   spiked;
         int   hybrids;
+        int   bestage;
         int   bestherbi;
         int   bestfrugi;
         int   bestcarni;
@@ -61,6 +62,7 @@ namespace Evolve {
     } t_stats;
 
     typedef struct s_num {
+        int age[conf::RECORD_SIZE];
         int herbivore[conf::RECORD_SIZE];
         int carnivore[conf::RECORD_SIZE];
         int frugivore[conf::RECORD_SIZE];
@@ -252,6 +254,7 @@ namespace Evolve {
         float HAZARDDECAY;
         float HAZARDDEPOSIT;
         float HAZARDDAMAGE;
+        t_stats stats;
 
     private:
         void writeReport();
@@ -264,7 +267,6 @@ namespace Evolve {
         bool    _debug;
         bool    _autoselect;
         int     _selection;
-        t_stats stats;
     };
 }
 

@@ -1118,16 +1118,16 @@ void GLView::renderStats() {
 
   glBegin(GL_QUADS);
   glColor4f(0, 0.4, 0.5, 0.55);
-  glVertex3f(10, 10, 0);
+  glVertex3f(10, 110, 0);
   glVertex3f(10, wh - 0, 0);
   glVertex3f(ww - 10, wh - 0, 0);
-  glVertex3f(ww - 10, 10, 0);
+  glVertex3f(ww - 10, 110, 0);
   glEnd();
 
   glBegin(GL_LINES);
   glColor3f(0, 0, 0); //border around graphs and feedback
 
-  glVertex3f(20, 20, 0);
+  glVertex3f(20, 120, 0);
   glVertex3f(20, 1000, 0);
 
  //  glColor3f(0, 0, 0.8); //hybrid count
@@ -1136,6 +1136,12 @@ void GLView::renderStats() {
  //   glVertex3f(-2020 + q*10, conf::HEIGHT - mm*_world->numHybrid[q],0);
  //   glVertex3f(-2020 +(q+1)*10, conf::HEIGHT - mm*_world->numHybrid[q+1],0);
  // }
+ glColor3f(0.5,1,0.5); //herbivore count
+ for(int q=0;q<conf::RECORD_SIZE-1;q++) {
+   if(q==_world->ptr-1) continue;
+   glVertex3f(20 + q*5,1000-mm*_world->num.age[q],0);
+   glVertex3f(20 +(q+1)*5,1000-mm*_world->num.age[q+1],0);
+ }
  glColor3f(0,1,0); //herbivore count
  for(int q=0;q<conf::RECORD_SIZE-1;q++) {
    if(q==_world->ptr-1) continue;
@@ -1177,6 +1183,10 @@ void GLView::renderStats() {
   glEnd();
 
   //labels for current population bars
+  sprintf(_buf2, "%i Best Age", _world->stats.bestage);
+  RenderString(30+_world->ptr * 5, 1000-mm * _world->stats.bestage,
+               GLUT_BITMAP_HELVETICA_12, _buf2, 0.8f, 0.8f, 0.6f);
+  sprintf(_buf2, "%i units", _world->getAlive());
   sprintf(_buf2, "%i dead", _world->getDead());
   RenderString(30+_world->ptr * 5, 1000-mm * _world->getUnits(),
                GLUT_BITMAP_HELVETICA_12, _buf2, 0.8f, 0.8f, 0.6f);
@@ -1192,6 +1202,29 @@ void GLView::renderStats() {
   sprintf(_buf2, "%i frugi", _world->getFrugivores());
   RenderString(30+_world->ptr * 5, 1000-mm * _world->getFrugivores(),
                 GLUT_BITMAP_HELVETICA_12, _buf2, 0.5f, 0.5f, 0.0f);
+
+  sprintf(_buf2, "Best Age: %i", _world->stats.bestage);
+  RenderString(30, 30, GLUT_BITMAP_HELVETICA_12, _buf2, 1.0f, 1.0f, 1.0f);
+  sprintf(_buf2, "Best Herbi: %i", _world->stats.bestherbi);
+  RenderString(130, 30, GLUT_BITMAP_HELVETICA_12, _buf2, 1.0f, 1.0f, 1.0f);
+  sprintf(_buf2, "Best Carni: %i", _world->stats.bestcarni);
+  RenderString(130, 60, GLUT_BITMAP_HELVETICA_12, _buf2, 1.0f, 1.0f, 1.0f);
+  sprintf(_buf2, "Best Frugi: %i", _world->stats.bestfrugi);
+  RenderString(130, 90, GLUT_BITMAP_HELVETICA_12, _buf2, 1.0f, 1.0f, 1.0f);
+
+  sprintf(_buf2, "Herbi: %i", _world->stats.herbivores);
+  RenderString(230, 30, GLUT_BITMAP_HELVETICA_12, _buf2, 1.0f, 1.0f, 1.0f);
+  sprintf(_buf2, "Carni: %i", _world->stats.carnivores);
+  RenderString(230, 60, GLUT_BITMAP_HELVETICA_12, _buf2, 1.0f, 1.0f, 1.0f);
+  sprintf(_buf2, "Frugi: %i", _world->stats.frugivores);
+  RenderString(230, 90, GLUT_BITMAP_HELVETICA_12, _buf2, 1.0f, 1.0f, 1.0f);
+
+  sprintf(_buf2, "Plants: %i", _world->stats.plants);
+  RenderString(330, 30, GLUT_BITMAP_HELVETICA_12, _buf2, 1.0f, 1.0f, 1.0f);
+  sprintf(_buf2, "Fruits: %i", _world->stats.fruits);
+  RenderString(330, 60, GLUT_BITMAP_HELVETICA_12, _buf2, 1.0f, 1.0f, 1.0f);
+  sprintf(_buf2, "Meats: %i", _world->stats.meats);
+  RenderString(330, 90, GLUT_BITMAP_HELVETICA_12, _buf2, 1.0f, 1.0f, 1.0f);
 
   glPopMatrix();
   glPopMatrix();

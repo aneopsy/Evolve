@@ -743,6 +743,7 @@ void Evolve::World::update() {
       modcounter % (FRAMES_PER_EPOCH / REPORTS_PER_EPOCH) == 0) {
     findStats();
     //write report and record counts
+    num.age[ptr] = stats.bestage;
     num.herbivore[ptr] = getHerbivores();
     num.carnivore[ptr] = getCarnivores();
     num.frugivore[ptr] = getFrugivores();
@@ -1945,7 +1946,7 @@ void Evolve::World::writeReport() {
           randspec, randseed, randgen, randmetab, randred, randgre, randblu);
   //print generations: Top Gen counts
   fprintf(fr,
-          ";TopHGen:\t%i\t;TopFGen:\t%i\t;TopCGen:\t%i\t;TopLGen:\t%i\t;TopAGen:\t%i\t",
+          ";TopHGen:\t%i\t;TopFGen:\t%i\t;TopCGen:\t%i\t;TopTGen:\t%i\t;TopAGen:\t%i\t",
           stats.bestherbi, stats.bestfrugi, stats.bestcarni, stats.bestterran,
           stats.bestaquatic);
   //print deaths: Number and Causes
@@ -2055,6 +2056,7 @@ void Evolve::World::findStats() {
   stats.spiked      = 0;
   stats.hybrids     = 0;
   stats.bestherbi   = 0;
+  stats.bestage     = 0;
   stats.bestfrugi   = 0;
   stats.bestcarni   = 0;
   stats.bestterran  = 0;
@@ -2073,7 +2075,8 @@ void Evolve::World::findStats() {
   for (int i = 0; i < (int) units.size(); i++) {
     if (units[i].health > 0) {
       stats.alive++;
-
+      if (units[i].age > stats.bestage)
+        stats.bestage = units[i].age;
       if (units[i].isHerbivore()) {
         stats.herbivores++;
         if (units[i].gencount > stats.bestherbi)
