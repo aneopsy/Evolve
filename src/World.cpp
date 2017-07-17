@@ -1931,25 +1931,25 @@ void Evolve::World::writeReport() {
   FILE *fr = fopen("report.csv", "a");
   //print basics: Epoch and Unit counts
   fprintf(fr,
-          "Epoch:\t%i\t#Units:\t%i\t#Herbi:\t%i\t#Frugi:\t%i\t#Carni:\t%i\t#Terra:\t%i\t#Aqua:\t%i\t#Hybrids:\t%i\t#Spikes:\t%i\t",
+          "Epoch:\t%i\t;Units:\t%i\t;Herbi:\t%i\t;Frugi:\t%i\t;Carni:\t%i\t;Terra:\t%i\t;Aqua:\t%i\t;Hybrids:\t%i\t;Spikes:\t%i\t",
           current_epoch, getAlive(), getHerbivores(), getFrugivores(),
           getCarnivores(), getLungLand(), getLungWater(), getHybrids(),
           getSpiked());
   //print world stats: cell counts
   fprintf(fr,
-          "#0.75Plant:\t%i\t#0.5Meat:\t%i\t#0.5Hazard:\t%i\t#0.5Fruit:\t%i\t",
+          ";0.75Plant:\t%i\t;0.5Meat:\t%i\t;0.5Hazard:\t%i\t;0.5Fruit:\t%i\t",
           getFood(), getMeat(), getHazards(), getFruit());
   //print random selections: Genome, brain seeds, [[[generation]]]
   fprintf(fr,
-          "RandGenome:\t%i\tRandSeed:\t%i\tRandGen:\t%i\tRandMetabolism:\t%f\tRandColorR:\t%f\tRandColorG:\t%f\tRandColorB:\t%f\t",
+          ";RandGenome:\t%i\t;RandSeed:\t%i\t;RandGen:\t%i\t;RandMetabolism:\t%f\t;RandColorR:\t%f\t;RandColorG:\t%f\t;RandColorB:\t%f\t",
           randspec, randseed, randgen, randmetab, randred, randgre, randblu);
   //print generations: Top Gen counts
   fprintf(fr,
-          "TopHGen:\t%i\tTopFGen:\t%i\tTopCGen:\t%i\tTopLGen:\t%i\tTopAGen:\t%i\t",
+          ";TopHGen:\t%i\t;TopFGen:\t%i\t;TopCGen:\t%i\t;TopLGen:\t%i\t;TopAGen:\t%i\t",
           stats.bestherbi, stats.bestfrugi, stats.bestcarni, stats.bestterran,
           stats.bestaquatic);
   //print deaths: Number and Causes
-  fprintf(fr, "#Deaths:\t%i\tDEATHLOG:\t",
+  fprintf(fr, ";Deaths:\t%i\tDEATHLOG:\t",
           deaths.size());
   for (int e = 0; e < (int) deathlog.size(); e++) {
     fprintf(fr, "%s:\t%i\t", deathlog[e], deathcounts[e]);

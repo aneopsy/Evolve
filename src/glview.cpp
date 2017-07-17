@@ -523,8 +523,8 @@ void GLView::handleIdle() {
         renderScene();
         glutSetWindow(profileWin);
         renderProfile();
-        // glutSetWindow(statsWin);
-        // renderStats();
+        glutSetWindow(statsWin);
+        renderStats();
       }
     } else {
       clock_t endwait;
@@ -535,8 +535,8 @@ void GLView::handleIdle() {
       renderScene();
       glutSetWindow(profileWin);
       renderProfile();
-    //   glutSetWindow(statsWin);
-    //   renderStats();
+       glutSetWindow(statsWin);
+       renderStats();
     }
   } else {
     if (_live.selection == Select::RELATIVE)
@@ -1099,7 +1099,7 @@ void GLView::renderProfile() {
 }
 
 void GLView::renderStats() {
-  float mm = 3;
+  float mm = 2;
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glClearColor(0.129, 0.145, 0.168, 255);
 
@@ -1119,8 +1119,8 @@ void GLView::renderStats() {
   glBegin(GL_QUADS);
   glColor4f(0, 0.4, 0.5, 0.55);
   glVertex3f(10, 10, 0);
-  glVertex3f(10, wh - 10, 0);
-  glVertex3f(ww - 10, wh - 10, 0);
+  glVertex3f(10, wh - 0, 0);
+  glVertex3f(ww - 10, wh - 0, 0);
   glVertex3f(ww - 10, 10, 0);
   glEnd();
 
@@ -1128,62 +1128,70 @@ void GLView::renderStats() {
   glColor3f(0, 0, 0); //border around graphs and feedback
 
   glVertex3f(20, 20, 0);
-  glVertex3f(20, 230, 0);
+  glVertex3f(20, 1000, 0);
 
-  glColor3f(0, 0, 0.8); //hybrid count
-//  for(int q=0;q<conf::RECORD_SIZE-1;q++) {
-//    if(q==_world->ptr-1) continue;
-//    glVertex3f(-2020 + q*10, conf::HEIGHT - mm*_world->numHybrid[q],0);
-//    glVertex3f(-2020 +(q+1)*10, conf::HEIGHT - mm*_world->numHybrid[q+1],0);
-//  }
-//  glColor3f(0,1,0); //herbivore count
-//  for(int q=0;q<conf::RECORD_SIZE-1;q++) {
-//    if(q==_world->ptr-1) continue;
-//    glVertex3f(-2020 + q*10,conf::HEIGHT -mm*_world->numHerbivore[q],0);
-//    glVertex3f(-2020 +(q+1)*10,conf::HEIGHT -mm*_world->numHerbivore[q+1],0);
-//  }
-//  glColor3f(1,0,0); //carnivore count
-//  for(int q=0;q<conf::RECORD_SIZE-1;q++) {
-//    if(q==_world->ptr-1) continue;
-//    glVertex3f(-2020 + q*10,conf::HEIGHT -mm*_world->numCarnivore[q],0);
-//    glVertex3f(-2020 +(q+1)*10,conf::HEIGHT -mm*_world->numCarnivore[q+1],0);
-//  }
-//  glColor3f(0.7,0.7,0); //frugivore count
-//  for(int q=0;q<conf::RECORD_SIZE-1;q++) {
-//    if(q==_world->ptr-1) continue;
-//    glVertex3f(-2020 + q*10,conf::HEIGHT -mm*_world->numFrugivore[q],0);
-//    glVertex3f(-2020 +(q+1)*10,conf::HEIGHT -mm*_world->numFrugivore[q+1],0);
-//  }
-//  glColor3f(0,0,0); //total count
-//  for(int q=0;q<conf::RECORD_SIZE-1;q++) {
-//    if(q==_world->ptr-1) continue;
-//    glVertex3f(-2020 + q*10,conf::HEIGHT -mm*_world->numTotal[q],0);
-//    glVertex3f(-2020 +(q+1)*10,conf::HEIGHT -mm*_world->numTotal[q+1],0);
-//  }
-//  glColor3f(0.8,0.8,0.6); //dead count
-//  for(int q=0;q<conf::RECORD_SIZE-1;q++) {
-//    if(q==_world->ptr-1) continue;
-//    glVertex3f(-2020 + q*10,conf::HEIGHT -mm*(_world->numDead[q]+_world->numTotal[q]),0);
-//    glVertex3f(-2020 +(q+1)*10,conf::HEIGHT -mm*(_world->numDead[q+1]+_world->numTotal[q+1]),0);
-//  }
+ //  glColor3f(0, 0, 0.8); //hybrid count
+ // for(int q=0;q<conf::RECORD_SIZE-1;q++) {
+ //   if(q==_world->ptr-1) continue;
+ //   glVertex3f(-2020 + q*10, conf::HEIGHT - mm*_world->numHybrid[q],0);
+ //   glVertex3f(-2020 +(q+1)*10, conf::HEIGHT - mm*_world->numHybrid[q+1],0);
+ // }
+ glColor3f(0,1,0); //herbivore count
+ for(int q=0;q<conf::RECORD_SIZE-1;q++) {
+   if(q==_world->ptr-1) continue;
+   glVertex3f(20 + q*5,1000-mm*_world->num.herbivore[q],0);
+   glVertex3f(20 +(q+1)*5,1000-mm*_world->num.herbivore[q+1],0);
+ }
+ glColor3f(1,0,0); //carnivore count
+ for(int q=0;q<conf::RECORD_SIZE-1;q++) {
+   if(q==_world->ptr-1) continue;
+   glVertex3f(20 + q*5,1000-mm*_world->num.carnivore[q],0);
+   glVertex3f(20 +(q+1)*5,1000-mm*_world->num.carnivore[q+1],0);
+ }
+ glColor3f(0.7,0.7,0); //frugivore count
+ for(int q=0;q<conf::RECORD_SIZE-1;q++) {
+   if(q==_world->ptr-1) continue;
+   glVertex3f(20 + q*5,1000-mm*_world->num.frugivore[q],0);
+   glVertex3f(20 +(q+1)*5,1000-mm*_world->num.frugivore[q+1],0);
+ }
+ glColor3f(0,0,0); //total count
+ for(int q=0;q<conf::RECORD_SIZE-1;q++) {
+   if(q==_world->ptr-1) continue;
+   glVertex3f(20 + q*5,1000-mm*_world->num.total[q],0);
+   glVertex3f(20 +(q+1)*5,1000-mm*_world->num.total[q+1],0);
+ }
+ glColor3f(0.8,0.8,0.6); //dead count
+ for(int q=0;q<conf::RECORD_SIZE-1;q++) {
+   if(q==_world->ptr-1) continue;
+   glVertex3f(20+q*5,1000-mm*(_world->num.dead[q]+_world->num.total[q]),0);
+   glVertex3f(20+(q+1)*5,1000-mm*(_world->num.dead[q+1]+_world->num.total[q+1]),0);
+ }
 
-  //current population vertical bars
-  glVertex3f(-2020 + _world->ptr * 10, conf::HEIGHT, 0);
-  glVertex3f(-2020 + _world->ptr * 10, conf::HEIGHT - mm * _world->getUnits(),
-             0);
-  glColor3f(0, 0, 0);
-  glVertex3f(-2020 + _world->ptr * 10, conf::HEIGHT, 0);
-  glVertex3f(-2020 + _world->ptr * 10, conf::HEIGHT - mm * _world->getAlive(),
-             0);
+  // glColor3f(255, 255, 255);
+  // //current population vertical bars
+  // glVertex3f(20, 250-mm * _world->getUnits(), 0);
+  // glVertex3f(_world->ptr * 10, 250-mm * _world->getUnits(), 0);
+  // glColor3f(255, 255, 255);
+  // glVertex3f(20, 250-mm * _world->getAlive(), 0);
+  // glVertex3f(_world->ptr * 10, 250-mm * _world->getAlive(), 0);
   glEnd();
 
   //labels for current population bars
   sprintf(_buf2, "%i dead", _world->getDead());
-  RenderString(-2016 + _world->ptr * 10, conf::HEIGHT - mm * _world->getUnits(),
+  RenderString(30+_world->ptr * 5, 1000-mm * _world->getUnits(),
                GLUT_BITMAP_HELVETICA_12, _buf2, 0.8f, 0.8f, 0.6f);
   sprintf(_buf2, "%i units", _world->getAlive());
-  RenderString(-2016 + _world->ptr * 10, conf::HEIGHT - mm * _world->getAlive(),
+  RenderString(30+_world->ptr * 5, 1000-mm * _world->getAlive(),
                GLUT_BITMAP_HELVETICA_12, _buf2, 0.0f, 0.0f, 0.0f);
+  sprintf(_buf2, "%i herbi", _world->getHerbivores());
+  RenderString(30+_world->ptr * 5, 1000-mm * _world->getHerbivores(),
+                GLUT_BITMAP_HELVETICA_12, _buf2, 0.0f, 1.0f, 0.0f);
+  sprintf(_buf2, "%i carni", _world->getCarnivores());
+  RenderString(30+_world->ptr * 5, 1000-mm * _world->getCarnivores(),
+                GLUT_BITMAP_HELVETICA_12, _buf2, 1.0f, 0.0f, 0.0f);
+  sprintf(_buf2, "%i frugi", _world->getFrugivores());
+  RenderString(30+_world->ptr * 5, 1000-mm * _world->getFrugivores(),
+                GLUT_BITMAP_HELVETICA_12, _buf2, 0.5f, 0.5f, 0.0f);
 
   glPopMatrix();
   glPopMatrix();
